@@ -1,4 +1,4 @@
-# Playwright API Automation (Python)
+# Playwright API Automation with CI/CD (Python)
 
 This project demonstrates a robust API automation suite for testing user signup functionality using **Playwright** and **Python (pytest)**.
 
@@ -87,3 +87,23 @@ Run the full test suite using pytest:
 ```bash
 pytest test_signup.py
 ```
+
+## 🚀 CI/CD Pipeline
+
+This project uses **GitHub Actions** for Continuous Integration. The pipeline automatically runs the test suite on every code change to ensure stability.
+
+-   **Workflow File**: [`.github/workflows/playwright.yml`](.github/workflows/playwright.yml)
+-   **Triggers**: Pushes and Pull Requests to the `main` branch.
+
+### Pipeline Steps
+1.  **Environment Setup**: Sets up an Ubuntu runner with Python 3.12.
+2.  **Dependency Installation**: Installs `pytest`, `playwright`, and other requirements.
+3.  **Browser Setup**: Installs necessary Playwright browsers (Chromium).
+4.  **Test Execution**: Runs the full test suite using `pytest`.
+    -   Generates a JUnit XML report in `test-results/`.
+5.  **Artifact Upload**: Uploads the test results (XML report) for review, even if tests fail.
+
+### Viewing Results
+1.  Go to the **Actions** tab in the GitHub repository.
+2.  Click on the latest workflow run.
+3.  Check the "Run tests" step for console output or download the `playwright-report` artifact for detailed logs.
