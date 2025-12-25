@@ -1,6 +1,6 @@
 import pytest
 from playwright.sync_api import Playwright, APIRequestContext
-from client import SignupClient, BASE_URL
+from api_objects import SignupClient, BASE_URL
 
 # --- Fixtures ---
 @pytest.fixture(scope="session")

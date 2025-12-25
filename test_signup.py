@@ -1,5 +1,5 @@
 import pytest
-from client import SignupClient
+from api_objects import SignupClient
 
 # --- Test Suite ---
 class TestSignup:
