@@ -195,13 +195,31 @@ jobs:
           name: allure-report-3.12
           path: ./allure-report
       
+      - name: Create root redirect page
+        run: |
+          cat > index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Redirecting to Allure Report...</title>
+            <meta http-equiv="refresh" content="0; url=allure-report/index.html">
+            <script>
+              window.location.href = "allure-report/index.html";
+            </script>
+          </head>
+          <body>
+            <p>Redirecting to <a href="allure-report/index.html">Allure Report</a>...</p>
+          </body>
+          </html>
+          EOF
+      
       - name: Publish Allure Report to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./allure-report
+          publish_dir: ./
           publish_branch: gh-pages
-          destination_dir: allure-report
       
       - name: Report URL in Summary
         run: |
