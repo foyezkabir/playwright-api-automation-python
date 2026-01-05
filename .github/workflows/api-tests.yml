@@ -20,6 +20,13 @@ on:
           - staging
           - prod
 
+permissions:
+  contents: write
+  checks: write
+  pull-requests: write
+  pages: write
+  id-token: write
+
 jobs:
   api-tests:
     name: Run API Tests
