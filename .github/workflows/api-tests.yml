@@ -110,6 +110,15 @@ jobs:
           publish_branch: gh-pages
           destination_dir: allure-report
       
+      - name: Report URL in Summary
+        if: always() && github.ref == 'refs/heads/main' && matrix.python-version == '3.12'
+        run: |
+          echo "## 📊 Allure Report Published!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 **View Report:** https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Report will be available in ~2 minutes after deployment completes." >> $GITHUB_STEP_SUMMARY
+      
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4
