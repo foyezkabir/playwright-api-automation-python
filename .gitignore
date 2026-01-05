@@ -2,15 +2,87 @@
 __pycache__/
 *.py[cod]
 *$py.class
-venv/
-.env
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# Playwright
+# Virtual Environment
+venv/
+ENV/
+env/
+.venv
+
+# Environment files (IMPORTANT: Keep secrets out of repo)
+.env
+.env.local
+.env.*.local
+
+# Pytest
+.pytest_cache/
+.cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+.hypothesis/
+junit.xml
+
+# Test Results & Reports (Generated files - should not be committed)
 test-results/
+allure-results/
+allure-report/
 playwright-report/
 blob-report/
-.pytest_cache/
+trace.zip
+
+# Playwright
+playwright/.cache/
+
+# Allure (Generated reports)
+allure-results/
+allure-report/
+
+# Logs (Generated files)
+*.log
+logs/
+
+# Screenshots (Generated during test failures)
+screenshots/
+*.png
+*.jpg
+*.jpeg
+
+# ReportPortal
+reportportal/
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
+*.swn
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+~$*
+
+# Note: Documentation files (*.md) are NOT ignored - they should be committed
+# .env.example should also be committed as a template

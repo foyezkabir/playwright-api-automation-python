@@ -1,9 +1,9 @@
 import time
 from typing import Dict, Any
 from playwright.sync_api import APIRequestContext, APIResponse
+from config import config
 
 # --- Configuration ---
-BASE_URL = "https://eks-dev-lb.shadhinlab.xyz"
 SIGNUP_ENDPOINT = "/api/authentication/signup/"
 
 # --- API Object Model ---

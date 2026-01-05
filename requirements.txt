@@ -1,2 +1,30 @@
-pytest-playwright
-pytest
+# Core Testing Framework
+pytest>=7.4.0
+pytest-playwright>=0.4.0
+
+# Test Enhancements
+pytest-xdist>=3.5.0              # Parallel test execution
+pytest-rerunfailures>=12.0       # Auto-retry flaky tests
+pytest-timeout>=2.2.0            # Timeout handling
+pytest-html>=4.1.0               # HTML test reports
+
+# Data Generation
+Faker>=20.0.0                    # Realistic test data generation
+
+# Configuration & Environment
+python-dotenv>=1.0.0             # Environment variable management
+
+# API Schema Validation
+pydantic>=2.5.0                  # Request/response validation
+pydantic[email]>=2.5.0           # Email validation support
+
+# Reporting & Analytics
+allure-pytest>=2.13.0            # Allure rich HTML reports
+pytest-reportportal>=5.3.0       # AI-powered ReportPortal integration
+
+# Code Quality & Coverage (Optional)
+pytest-cov>=4.1.0                # Code coverage
+safety>=2.3.0                    # Security vulnerability scanning
+
+# Utilities
+requests>=2.31.0                 # HTTP library for additional API calls

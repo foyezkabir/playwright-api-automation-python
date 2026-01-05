@@ -1,17 +1,54 @@
 import pytest
+import allure
 from api_objects import SignupClient
+from data_factory import UserDataFactory
+from schemas import assert_response_schema, SignupSuccessResponseSchema, SignupErrorResponseSchema
+from reportportal_helpers import ReportPortalHelper
 
 # --- Test Suite ---
+@allure.feature('Authentication')
+@allure.story('User Signup')
 class TestSignup:
     """Test suite for User Signup API."""
 
+    @allure.title("Test successful user signup with valid data")
+    @allure.description("Verify that a user can successfully register with all required fields")
+    @allure.severity(allure.severity_level.CRITICAL)
+    @pytest.mark.smoke
     def test_signup_success(self, signup_api: SignupClient):
         """Verify successful user registration with valid data."""
-        payload = signup_api.default_payload("success")
-        response = signup_api.create_user(payload)
+        # Generate test data using factory
+        payload = UserDataFactory.create_signup_payload()
         
-        assert response.status in [200, 201], \
-            f"Expected success (200/201), got {response.status}. Body: {response.text()}"
+        # Log to ReportPortal
+        ReportPortalHelper.log_request(
+            test_name="test_signup_success",
+            method="POST",
+            url="/api/authentication/signup/",
+            payload=payload
+        )
+        
+        # Execute API call
+        with allure.step("Send signup request with valid data"):
+            response = signup_api.create_user(payload)
+        
+        # Log response
+        ReportPortalHelper.log_response(
+            test_name="test_signup_success",
+            status_code=response.status,
+            response_body=response.json() if response.ok else response.text()
+        )
+        
+        # Assertions
+        with allure.step(f"Verify response status is 200 or 201"):
+            assert response.status in [200, 201], \
+                f"Expected success (200/201), got {response.status}. Body: {response.text()}"
+        
+        # Schema validation
+        if response.ok:
+            with allure.step("Validate response schema"):
+                response_data = response.json()
+                assert_response_schema(response_data, SignupSuccessResponseSchema)
 
     def test_signup_missing_fields(self, signup_api: SignupClient):
         """Verify validation error when required fields are missing."""
