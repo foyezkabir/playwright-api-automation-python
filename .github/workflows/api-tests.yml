@@ -189,15 +189,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
+      - name: Create publish directory
+        run: mkdir -p publish
+      
       - name: Download Allure Report (Python 3.12)
         uses: actions/download-artifact@v4
         with:
           name: allure-report-3.12
-          path: ./allure-report
+          path: ./publish/allure-report
       
       - name: Create root redirect page
         run: |
-          cat > index.html << 'EOF'
+          cat > publish/index.html << 'EOF'
           <!DOCTYPE html>
           <html>
           <head>
@@ -218,7 +221,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./
+          publish_dir: ./publish
           publish_branch: gh-pages
       
       - name: Report URL in Summary
