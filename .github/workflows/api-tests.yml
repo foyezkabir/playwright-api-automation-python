@@ -28,8 +28,9 @@ permissions:
   id-token: write
 
 jobs:
-  api-tests:
-    name: Run API Tests
+  # Step 1: Build - Install dependencies and setup environment
+  build:
+    name: 🔨 Build & Setup
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -52,6 +53,16 @@ jobs:
           pip install -r requirements.txt
           playwright install --with-deps chromium
       
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-pip-playwright-${{ hashFiles('requirements.txt') }}-${{ matrix.python-version }}
+          restore-keys: |
+            ${{ runner.os }}-pip-playwright-
+      
       - name: Create .env file
         run: |
           cat > .env << EOF
@@ -65,6 +76,46 @@ jobs:
           RP_UUID=${{ secrets.RP_UUID }}
           RP_LAUNCH_NAME="API Tests - GitHub Actions"
           EOF
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.python-version }}
+          path: |
+            .env
+            requirements.txt
+          retention-days: 1
+
+  # Step 2: Test - Run API tests
+  test:
+    name: 🧪 Run Tests
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12']
+      fail-fast: false
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-${{ matrix.python-version }}
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
       
       - name: Run tests with pytest
         id: pytest
@@ -108,24 +159,6 @@ jobs:
           path: ./allure-report
           retention-days: 30
       
-      - name: Publish Allure Report to GitHub Pages
-        if: always() && github.ref == 'refs/heads/main' && matrix.python-version == '3.12'
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./allure-report
-          publish_branch: gh-pages
-          destination_dir: allure-report
-      
-      - name: Report URL in Summary
-        if: always() && github.ref == 'refs/heads/main' && matrix.python-version == '3.12'
-        run: |
-          echo "## 📊 Allure Report Published!" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🔗 **View Report:** https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-report" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Report will be available in ~2 minutes after deployment completes." >> $GITHUB_STEP_SUMMARY
-      
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4
@@ -141,36 +174,42 @@ jobs:
           files: ./test-results/junit.xml
           check_name: Test Results (Python ${{ matrix.python-version }})
       
-      - name: Comment PR with Test Results
-        if: always() && github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const testResults = fs.readFileSync('./test-results/junit.xml', 'utf8');
-            
-            // Parse results (simplified)
-            const comment = `
-            ## 🧪 Test Results (Python ${{ matrix.python-version }})
-            
-            **Status:** ${{ steps.pytest.outcome }}
-            
-            📊 [View Allure Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            
-            ---
-            *Automated API Test Report*
-            `;
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
-      
       - name: Fail job if tests failed
         if: steps.pytest.outcome == 'failure'
         run: exit 1
+
+  # Step 3: Deploy - Publish Allure reports to GitHub Pages
+  deploy:
+    name: 🚀 Deploy Reports
+    runs-on: ubuntu-latest
+    needs: test
+    if: always() && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Download Allure Report (Python 3.12)
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-report-3.12
+          path: ./allure-report
+      
+      - name: Publish Allure Report to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./allure-report
+          publish_branch: gh-pages
+          destination_dir: allure-report
+      
+      - name: Report URL in Summary
+        run: |
+          echo "## 📊 Allure Report Published!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 **View Report:** https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Report will be available in ~2 minutes after deployment completes." >> $GITHUB_STEP_SUMMARY
 
   # Security scan job
   security-scan:
