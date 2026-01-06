@@ -160,7 +160,9 @@ playwright-api-automation-python/
 
 ### Pipeline Visualization
 
-![CI/CD Pipeline Workflow](.github/images/workflow-visualization.png)
+<p align="center">
+  <img src=".github/images/workflow-visualization.png" alt="CI/CD Pipeline Workflow" width="800"/>
+</p>
 
 *Interactive workflow visualization showing all 9 stages with dependencies and parallel execution*
 
@@ -331,7 +333,9 @@ The GitHub Actions workflow consists of **9 stages** running in parallel and seq
 
 **Coverage Report Preview**:
 
-![Coverage Report](.github/images/coverage-report.png)
+<p align="center">
+  <img src=".github/images/coverage-report.png" alt="Coverage Report" width="600"/>
+</p>
 
 *File-level coverage breakdown showing 94% overall coverage*
 
