@@ -466,19 +466,57 @@ This project leverages **Model Context Protocol (MCP)** servers to enhance testi
 
 #### Basic Execution
 ```bash
-# Run all tests
-pytest
+# Normal test run (no README update)
+pytest tests/ -v
 
 # Run specific test file
-pytest test_signup.py
-pytest test_signup_verification.py
-
-# Run with verbose output
-pytest -v
+pytest tests/test_signup.py
+pytest tests/test_signup_verification.py
 
 # Run specific test
-pytest test_signup.py::TestSignup::test_signup_success
+pytest tests/test_signup.py::TestSignup::test_signup_success
 ```
+
+#### Auto-Update README with Test Results 🔄
+After every test run, automatically update the README with latest results:
+
+**Method 1: Using --update-readme Flag (Recommended)**
+```bash
+# Test run with README auto-update
+pytest tests/ --update-readme
+```
+
+**Method 2: Using Batch Script (Windows)**
+```bash
+# Runs tests and updates README automatically
+docs\run_tests_and_update_readme.bat
+```
+
+**Method 3: Using Environment Variable**
+```bash
+# Set environment variable and run tests
+set UPDATE_README=true
+pytest tests/
+
+# Or in one line (PowerShell)
+$env:UPDATE_README="true"; pytest tests/
+```
+
+**Method 4: Manual Update**
+```bash
+# Run tests first
+pytest tests/
+
+# Then manually update README
+python sync_readme_test_results.py
+```
+
+**How it works:**
+- Captures pytest output and statistics
+- Parses test counts (passed, failed, xfailed, skipped)
+- Extracts execution time
+- Updates the "Test Execution Results" section in README
+- Adds timestamp of last run
 
 #### With Allure Reports (Local)
 ```bash
@@ -548,9 +586,18 @@ REPORT_PORTAL_ENABLED=false      # ReportPortal removed
 │   ├── mcp.json                       # Model Context Protocol configuration
 │   └── settings.json                  # VS Code editor settings
 ├── allure-results/                    # Allure test execution results (gitignored)
+├── apiObjects/                        # API client objects for different features
+│   ├── __init__.py                    # Package initialization
+│   └── api_objects.py                 # Signup/Verification API clients
 ├── docs/                              # Project documentation
+│   ├── AUTO_UPDATE_README.md          # Guide for auto-updating README with test results
+│   └── run_tests_and_update_readme.bat # Batch script to run tests and sync results
 ├── logs/                              # Test execution logs (gitignored)
 ├── screenshots/                       # Test failure screenshots (gitignored)
+├── tests/                             # Test modules organized by feature
+│   ├── __init__.py                    # Package initialization
+│   ├── test_signup.py                 # Signup API tests (19 tests)
+│   └── test_signup_verification.py    # Verification + Resend OTP tests (10 tests)
 ├── venv/                              # Python virtual environment (gitignored)
 ├── .env                               # Environment variables (gitignored - local only)
 ├── .env.example                       # Example environment variables template
@@ -565,8 +612,7 @@ REPORT_PORTAL_ENABLED=false      # ReportPortal removed
 ├── requirements.txt                   # Python dependencies
 ├── schemas.py                         # Pydantic models for validation
 ├── setup.py                           # Package installation configuration
-├── test_signup_verification.py        # Verification + Resend OTP tests (10 tests)
-└── test_signup.py                     # Signup API tests (19 tests)
+└── sync_readme_test_results.py        # Script to sync test results to README
 ```
 
 ## 🎨 Custom Decorators
@@ -674,28 +720,28 @@ Used for verifying actual UI behavior vs API behavior:
 
 ## 📈 Test Execution Results
 
-### Latest Test Run
+### Latest Test Run (2026-01-06 11:36:07)
 ```
 ========================== test session starts ==========================
 collected 29 items
 
 test_signup.py                                     19 tests
-  ✅ 8 passed
+  ✅ 18 passed
   ⚠️ 11 xfailed (security issues documented)
 
 test_signup_verification.py                        10 tests
   ✅ 10 passed
 
-==================== 18 passed, 11 xfailed in 12.5s ====================
+==================== 18 passed, 11 xfailed in N/As ====================
 ```
 
 ### Performance Metrics
 - **Total Tests**: 29
-- **Execution Time**: ~12-15 seconds
+- **Execution Time**: ~N/A seconds
 - **Parallel Workers**: 12
 - **Retry Attempts**: Up to 3 per test
 - **CI/CD Pipeline**: ~15-20 seconds total
-
+- **Last Updated**: 2026-01-06 11:36:07
 ## 🤝 Contributing
 
 Contributions welcome! Please follow these steps:

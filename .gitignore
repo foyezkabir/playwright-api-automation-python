@@ -78,6 +78,9 @@ reportportal/
 .DS_Store
 Thumbs.db
 
+# Copilot Instructions (local AI assistant config)
+.github/copilot-instructions.md
+
 # Temporary files
 *.tmp
 *.temp

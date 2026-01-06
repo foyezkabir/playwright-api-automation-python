@@ -1,6 +1,6 @@
 import pytest
 import allure
-from api_objects import SignupClient
+from apiObjects.api_objects import SignupClient
 from data_factory import UserDataFactory
 from decorators import regression_test, api_smoke, validation_test, known_bug, feature_story
 
@@ -28,6 +28,9 @@ class TestSignupVerification:
         }
         
         response = signup_api.confirm_signup(verification_payload)
+        
+        # Note: This will return error since we don't have actual OTP from email
+        # Expected: 400 with CODE_MISMATCH or similar error
         # Will fail without real OTP
         assert response.status in [200, 400], \
             f"Got {response.status}: {response.text()}"

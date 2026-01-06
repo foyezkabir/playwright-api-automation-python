@@ -1,6 +1,6 @@
 import pytest
 import allure
-from api_objects import SignupClient
+from apiObjects.api_objects import SignupClient
 from data_factory import UserDataFactory
 from schemas import assert_response_schema, SignupSuccessResponseSchema, SignupErrorResponseSchema
 from decorators import smoke_test, regression_test, api_smoke, validation_test, known_bug, feature_story
