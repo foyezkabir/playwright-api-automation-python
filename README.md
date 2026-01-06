@@ -42,7 +42,7 @@ Enterprise-grade API testing framework for user authentication workflows includi
 - 📈 **Allure Reports** - Interactive HTML reports with test history, trends, and categorization
 - 🌐 **GitHub Pages** - Auto-deployed reports accessible at [Live URL](https://foyezkabir.github.io/playwright-api-automation-python/allure-report)
 - 🔬 **SonarCloud Integration** - Code quality analysis with Quality Gate enforcement
-- 📉 **Coverage Tracking** - 90%+ code coverage with HTML reports
+- 📉 **Coverage Tracking** - 93% code coverage with HTML reports
 - 🐛 **Code Smell Detection** - Automated detection and reporting
 - 🔒 **Security Analysis** - Vulnerability scanning and hotspot detection
 - 📋 **Duplication Tracking** - Maintains <3% code duplication
@@ -337,19 +337,19 @@ The GitHub Actions workflow consists of **9 stages** running in parallel and seq
   <img src=".github/images/coverage-report.png" alt="Coverage Report" width="600"/>
 </p>
 
-*File-level coverage breakdown showing 94% overall coverage*
+*File-level coverage breakdown showing 93% overall coverage*
 
 **Output Example**:
 ```
 📈 Test Coverage Report
-🟢 Overall Coverage: 92% (Excellent)
+🟢 Overall Coverage: 93% (Excellent)
 
-| File                    | Coverage |
-|-------------------------|----------|
+| File                         | Coverage |
+|------------------------------|----------|
+| ✅ data_factory.py           | 100%     |
+| ✅ decorators.py             | 98%      |
 | ✅ apiObjects/api_objects.py | 97%      |
-| ✅ schemas.py                | 86%      |
-| ⚠️  decorators.py            | 62%      |
-| ⚠️  data_factory.py          | 76%      |
+| ✅ schemas.py                | 81%      |
 
 📊 View Full HTML Report
 ```
@@ -404,6 +404,7 @@ gh-pages/
 **Slack Notification Includes**:
 - ✅/❌ Pipeline status
 - Repository and branch info
+- Commit message
 - Run number
 - Links to Allure Report and SonarCloud
 
@@ -464,7 +465,7 @@ gh-pages/
 | **Matrix Builds**         | 2 (Py 3.11, 3.12) |
 | **Total Tests**           | 29              |
 | **Success Rate**          | 100% (18 passed, 11 xfail) |
-| **Coverage**              | 92%             |
+| **Coverage**              | 93%             |
 | **Code Quality Gate**     | ✅ PASSED       |
 | **Artifacts Generated**   | 10 per run      |
 
@@ -572,10 +573,11 @@ sonarcloud:
 
 ### Code Quality Achievements
 
-#### **Coverage**: 92%
+#### **Coverage**: 93%
 - High test coverage maintained
 - All critical paths covered
 - Edge cases included
+- 100% coverage on data_factory.py and 98% on decorators.py
 
 #### **Duplication**: <3%
 - Refactored conftest.py to eliminate duplication
@@ -889,7 +891,7 @@ python_functions = test_*
 🔗 **URL**: https://foyezkabir.github.io/playwright-api-automation-python/coverage-report/index.html
 
 **Features**:
-- ✅ Overall coverage percentage (92%)
+- ✅ Overall coverage percentage (93%)
 - ✅ File-level coverage breakdown
 - ✅ Line-by-line coverage visualization
 - ✅ Missing coverage highlights
@@ -1064,7 +1066,7 @@ Potential improvements and extensions:
 - **Lines of Code**: ~2,500
 - **Test Files**: 2
 - **Total Tests**: 29
-- **Code Coverage**: 92%
+- **Code Coverage**: 93%
 - **Quality Gate**: PASSED
 - **Pipeline Stages**: 9
 - **Average Pipeline Duration**: ~5 minutes

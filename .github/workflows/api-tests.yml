@@ -568,10 +568,12 @@ jobs:
         run: |
           echo "## 📢 Pipeline Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.event.head_commit.message }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Stage | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| 🎨 Code Quality | ${{ needs.code-quality.result || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "|  Build | ${{ needs.build.result || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔨 Build | ${{ needs.build.result || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| 💨 Smoke Tests | ${{ needs.smoke-tests.result || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| 🧪 Tests | ${{ needs.test.result || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| 🔬 SonarCloud | ${{ needs.sonarcloud.result || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
@@ -599,6 +601,13 @@ jobs:
                     "type": "plain_text",
                     "text": "${{ needs.test.result == 'success' && '✅' || '❌' }} API Tests - ${{ needs.test.result }}",
                     "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Commit:* ${{ github.event.head_commit.message }}"
                   }
                 },
                 {
