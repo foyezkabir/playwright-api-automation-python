@@ -5,37 +5,9 @@ Provides reusable decorators for test categorization, retry logic, and reporting
 
 import functools
 from collections.abc import Callable
-from typing import Optional
 
 import allure
 import pytest
-
-
-def smoke_test(title: str | None = None, description: str | None = None):
-    """
-    Decorator for smoke tests with automatic Allure annotations.
-
-    Args:
-        title: Test title (optional)
-        description: Test description (optional)
-
-    Usage:
-        @smoke_test(title="Login API", description="Test successful login")
-        def test_login_success(self):
-            ...
-    """
-
-    def decorator(func: Callable):
-        # Apply Allure decorators
-        if title:
-            func = allure.title(title)(func)
-        if description:
-            func = allure.description(description)(func)
-        func = allure.severity(allure.severity_level.CRITICAL)(func)
-        func = pytest.mark.smoke(func)
-        return func
-
-    return decorator
 
 
 def regression_test(title: str | None = None, description: str | None = None, severity: str = "NORMAL"):
@@ -74,36 +46,6 @@ def regression_test(title: str | None = None, description: str | None = None, se
     return decorator
 
 
-def api_test(method: str, endpoint: str, title: str | None = None):
-    """
-    Decorator for API tests with method and endpoint information.
-
-    Args:
-        method: HTTP method (GET, POST, PUT, DELETE, etc.)
-        endpoint: API endpoint path
-        title: Test title (optional)
-
-    Usage:
-        @api_test(method="POST", endpoint="/api/signup", title="Test signup")
-        def test_signup(self):
-            ...
-    """
-
-    def decorator(func: Callable):
-        test_title = title or f"{method} {endpoint}"
-        func = allure.title(test_title)(func)
-        func = allure.description(f"API Test: {method} {endpoint}")(func)
-
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            with allure.step(f"{method} {endpoint}"):
-                return func(*args, **kwargs)
-
-        return wrapper
-
-    return decorator
-
-
 def known_bug(bug_id: str, reason: str | None = None):
     """
     Decorator for tests with known bugs (xfail).
@@ -130,61 +72,6 @@ def known_bug(bug_id: str, reason: str | None = None):
     return decorator
 
 
-def flaky_test(reruns: int = 2, reruns_delay: int = 1):
-    """
-    Decorator for flaky tests that may need retries.
-
-    Args:
-        reruns: Number of retry attempts (default: 2)
-        reruns_delay: Delay between retries in seconds (default: 1)
-
-    Usage:
-        @flaky_test(reruns=3, reruns_delay=2)
-        def test_unstable_api(self):
-            ...
-    """
-
-    def decorator(func: Callable):
-        func = pytest.mark.flaky(reruns=reruns, reruns_delay=reruns_delay)(func)
-        return func
-
-    return decorator
-
-
-def performance_test(max_duration: int = 5):
-    """
-    Decorator for performance tests with timeout.
-
-    Args:
-        max_duration: Maximum allowed duration in seconds
-
-    Usage:
-        @performance_test(max_duration=3)
-        def test_fast_response(self):
-            ...
-    """
-
-    def decorator(func: Callable):
-        func = pytest.mark.timeout(max_duration)(func)
-        func = allure.label("test_type", "performance")(func)
-
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            import time
-
-            start_time = time.time()
-            result = func(*args, **kwargs)
-            duration = time.time() - start_time
-
-            with allure.step(f"Response time: {duration:.2f}s"):
-                assert duration <= max_duration, f"Test took {duration:.2f}s, expected <= {max_duration}s"
-            return result
-
-        return wrapper
-
-    return decorator
-
-
 def feature_story(feature: str, story: str):
     """
     Decorator to categorize tests by feature and story.
@@ -207,45 +94,22 @@ def feature_story(feature: str, story: str):
     return decorator
 
 
-def with_test_data(**test_data):
-    """
-    Decorator to attach test data to Allure report.
-
-    Args:
-        **test_data: Key-value pairs of test data
-
-    Usage:
-        @with_test_data(username="test_user", role="admin")
-        def test_with_data(self):
-            ...
-    """
-
-    def decorator(func: Callable):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            for key, value in test_data.items():
-                allure.attach(str(value), name=key, attachment_type=allure.attachment_type.TEXT)
-            return func(*args, **kwargs)
-
-        return wrapper
-
-    return decorator
-
-
-# Convenience decorators combining common patterns
-def critical_smoke(title: str, description: str | None = None):
-    """Critical smoke test (combines smoke_test with CRITICAL severity)."""
-    return smoke_test(title=title, description=description)
-
-
 def api_smoke(method: str, endpoint: str):
-    """API smoke test (combines api_test with smoke marker)."""
+    """API smoke test decorator."""
 
     def decorator(func: Callable):
-        func = api_test(method=method, endpoint=endpoint)(func)
+        test_title = f"{method} {endpoint}"
+        func = allure.title(test_title)(func)
+        func = allure.description(f"API Test: {method} {endpoint}")(func)
         func = pytest.mark.smoke(func)
         func = allure.severity(allure.severity_level.CRITICAL)(func)
-        return func
+
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            with allure.step(f"{method} {endpoint}"):
+                return func(*args, **kwargs)
+
+        return wrapper
 
     return decorator
 

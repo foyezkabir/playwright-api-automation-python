@@ -4,7 +4,7 @@ This module provides utilities for creating test data for API automation.
 """
 
 import time
-from typing import Any, Optional
+from typing import Any
 
 from faker import Faker
 
@@ -42,32 +42,6 @@ class UserDataFactory:
         """
         fake_locale = Faker(locale)
         return fake_locale.name()
-
-    @staticmethod
-    def random_first_name() -> str:
-        """Returns a random first name."""
-        return fake.first_name()
-
-    @staticmethod
-    def random_last_name() -> str:
-        """Returns a random last name."""
-        return fake.last_name()
-
-    @staticmethod
-    def random_email(domain: str | None = None) -> str:
-        """
-        Generates a random email address.
-
-        Args:
-            domain: Custom domain or None for random
-
-        Returns:
-            Random email address
-        """
-        if domain:
-            username = fake.user_name()
-            return f"{username}@{domain}"
-        return fake.email()
 
     @staticmethod
     def random_password(length: int = 12, include_special: bool = True) -> str:
@@ -113,35 +87,6 @@ class UserDataFactory:
         return "".join(shuffled_password)
 
     @staticmethod
-    def random_phone_number(country_code: str = "+1") -> str:
-        """
-        Generates a random phone number.
-
-        Args:
-            country_code: Country calling code (default: +1 for US)
-
-        Returns:
-            Random phone number
-        """
-        return f"{country_code}{fake.msisdn()[3:]}"
-
-    @staticmethod
-    def random_address() -> dict[str, str]:
-        """
-        Generates a random address dictionary.
-
-        Returns:
-            Dictionary with address components
-        """
-        return {
-            "street": fake.street_address(),
-            "city": fake.city(),
-            "state": fake.state(),
-            "zip_code": fake.zipcode(),
-            "country": fake.country(),
-        }
-
-    @staticmethod
     def create_signup_payload(
         name: str | None = None, email: str | None = None, password: str | None = None, **kwargs
     ) -> dict[str, Any]:
@@ -167,74 +112,3 @@ class UserDataFactory:
         payload.update(kwargs)
 
         return payload
-
-    @staticmethod
-    def create_invalid_payload(field_to_invalidate: str, invalid_value: Any = None) -> dict[str, Any]:
-        """
-        Creates a payload with one intentionally invalid field.
-
-        Args:
-            field_to_invalidate: Which field to make invalid
-            invalid_value: Custom invalid value (uses common invalid values if None)
-
-        Returns:
-            Payload with one invalid field
-        """
-        payload = UserDataFactory.create_signup_payload()
-
-        if invalid_value is not None:
-            payload[field_to_invalidate] = invalid_value
-        else:
-            # Use common invalid values based on field
-            # These are intentional test values for validation testing, not real credentials
-            invalid_values = {  # noqa: S105  # NOSONAR - Test data, not credentials
-                "email": "invalid-email-format",
-                "name": "User@123!",
-                "password": "weak",  # noqa: S105  # NOSONAR - Intentionally weak for testing
-                "confirm_password": "mismatch_password",
-            }
-            payload[field_to_invalidate] = invalid_values.get(field_to_invalidate, "")
-
-        return payload
-
-
-class AttackVectorFactory:
-    """Factory for generating security test payloads."""
-
-    @staticmethod
-    def sql_injection_payloads() -> list:
-        """Returns common SQL injection attack vectors."""
-        return [
-            "' OR '1'='1",
-            "admin'--",
-            "' OR 1=1--",
-            "1' AND '1'='1",
-            "'; DROP TABLE users--",
-            "1' UNION SELECT NULL--",
-        ]
-
-    @staticmethod
-    def xss_payloads() -> list:
-        """Returns common XSS attack vectors."""
-        return [
-            "<script>alert('XSS')</script>",
-            "<img src=x onerror=alert('XSS')>",
-            "javascript:alert('XSS')",
-            "<svg/onload=alert('XSS')>",
-            "'\"><script>alert(String.fromCharCode(88,83,83))</script>",
-        ]
-
-    @staticmethod
-    def boundary_test_strings() -> list:
-        """Returns strings for boundary testing."""
-        return [
-            "",  # Empty string
-            " ",  # Single space
-            "A" * 256,  # Very long string
-            "A" * 1000,  # Extremely long string
-            "\n\r\t",  # Special whitespace characters
-            "🔥💯🎉",  # Emoji
-            "测试用户",  # Chinese characters
-            "مستخدم الاختبار",  # Arabic characters
-            "Тест Пользователь",  # Cyrillic characters
-        ]

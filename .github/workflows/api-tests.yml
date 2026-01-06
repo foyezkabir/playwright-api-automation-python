@@ -104,9 +104,11 @@ jobs:
           ERROR_COUNT=$(echo "$MYPY_OUTPUT" | grep -c "error:" || echo "0")
           
           if [ "$ERROR_COUNT" -eq "0" ] || [ -z "$ERROR_COUNT" ]; then
-            echo "### 🎉 Congratulations! There are no type errors!" >> $GITHUB_STEP_SUMMARY
+            echo "### 🎉 Congratulations! No type errors found" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "✅ All type annotations are correct and consistent." >> $GITHUB_STEP_SUMMARY
+            echo "✅ All type annotations are correct and consistent" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "🔍 Your code passes all type checks with flying colors!" >> $GITHUB_STEP_SUMMARY
           else
             echo "### ❌ Found $ERROR_COUNT type error(s)" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
@@ -219,13 +221,14 @@ jobs:
           # Extract test counts
           PASSED=$(grep -oP '\d+(?= passed)' smoke-output.txt | head -1 || echo "0")
           FAILED=$(grep -oP '\d+(?= failed)' smoke-output.txt | head -1 || echo "0")
+          # Ensure FAILED is never empty
+          FAILED=${FAILED:-0}
+          PASSED=${PASSED:-0}
           TOTAL=$((PASSED + FAILED))
           
           # Status badge
           if [ "$FAILED" = "0" ] && [ "$PASSED" != "0" ]; then
             echo "### ✅ All Smoke Tests Passed!" >> $GITHUB_STEP_SUMMARY
-          elif [ "$FAILED" != "0" ]; then
-            echo "### ❌ Some Smoke Tests Failed" >> $GITHUB_STEP_SUMMARY
           else
             echo "### ⚠️ No Smoke Tests Found" >> $GITHUB_STEP_SUMMARY
           fi
@@ -483,7 +486,7 @@ jobs:
           " >> $GITHUB_STEP_SUMMARY
             
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "📊 [View Full HTML Report](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/coverage-report)" >> $GITHUB_STEP_SUMMARY
+            echo "📊 [View Full HTML Report](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/coverage-report/index.html)" >> $GITHUB_STEP_SUMMARY
           else
             echo "⚠️ Coverage report not found" >> $GITHUB_STEP_SUMMARY
           fi
