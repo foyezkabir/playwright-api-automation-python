@@ -1,0 +1,19 @@
+{
+	"servers": {
+		"playwright": {
+			"command": "npx",
+			"args": [
+				"@playwright/mcp@latest"
+			],
+			"type": "stdio"
+		},
+		"chrome-devtools": {
+			"command": "npx",
+			"args": [
+				"-y",
+				"chrome-devtools-mcp@latest"
+			]
+		}
+	},
+	"inputs": []
+}

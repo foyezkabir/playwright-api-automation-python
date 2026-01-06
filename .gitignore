@@ -71,7 +71,6 @@ screenshots/
 reportportal/
 
 # IDE
-.vscode/
 .idea/
 *.swp
 *.swo

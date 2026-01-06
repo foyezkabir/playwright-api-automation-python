@@ -67,14 +67,10 @@ jobs:
         run: |
           cat > .env << EOF
           ENV=${{ github.event.inputs.environment || 'dev' }}
-          BASE_URL=${{ secrets.BASE_URL }}
+          BASE_URL=https://eks-dev-lb.shadhinlab.xyz
           RETRY_COUNT=2
           PARALLEL_WORKERS=4
-          REPORT_PORTAL_ENABLED=${{ secrets.RP_ENABLED || 'false' }}
-          RP_ENDPOINT=${{ secrets.RP_ENDPOINT }}
-          RP_PROJECT=${{ secrets.RP_PROJECT }}
-          RP_UUID=${{ secrets.RP_UUID }}
-          RP_LAUNCH_NAME="API Tests - GitHub Actions"
+          REPORT_PORTAL_ENABLED=false
           EOF
       
       - name: Upload build artifacts

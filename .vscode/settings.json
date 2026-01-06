@@ -1,0 +1,17 @@
+{
+    "python.formatting.provider": "black",
+    "python.formatting.blackArgs": [
+        "--line-length=88"
+    ],
+    "editor.formatOnSave": true,
+    "[python]": {
+        "editor.defaultFormatter": null,
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        }
+    },
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true
+}

@@ -30,14 +30,6 @@ class Config:
     
     # Reporting
     ALLURE_RESULTS_DIR: str = os.getenv("ALLURE_RESULTS_DIR", "./allure-results")
-    REPORT_PORTAL_ENABLED: bool = os.getenv("REPORT_PORTAL_ENABLED", "false").lower() == "true"
-    
-    # ReportPortal Configuration
-    RP_ENDPOINT: Optional[str] = os.getenv("RP_ENDPOINT")
-    RP_PROJECT: Optional[str] = os.getenv("RP_PROJECT")
-    RP_UUID: Optional[str] = os.getenv("RP_UUID")
-    RP_LAUNCH_NAME: str = os.getenv("RP_LAUNCH_NAME", "API Automation Tests")
-    RP_LAUNCH_DESCRIPTION: str = os.getenv("RP_LAUNCH_DESCRIPTION", "Automated API testing with Playwright")
     
     # Database Configuration (if needed for verification)
     DB_HOST: Optional[str] = os.getenv("DB_HOST")
@@ -85,14 +77,7 @@ class Config:
         print(f"API Timeout: {cls.API_TIMEOUT}s")
         print(f"Retry Count: {cls.RETRY_COUNT}")
         print(f"Parallel Workers: {cls.PARALLEL_WORKERS}")
-        print(f"ReportPortal Enabled: {cls.REPORT_PORTAL_ENABLED}")
         print(f"Allure Results Dir: {cls.ALLURE_RESULTS_DIR}")
-        
-        if cls.REPORT_PORTAL_ENABLED:
-            print(f"RP Endpoint: {cls.RP_ENDPOINT}")
-            print(f"RP Project: {cls.RP_PROJECT}")
-            print(f"RP UUID: {'***' if cls.RP_UUID else 'Not Set'}")
-        
         print("="*50 + "\n")
 
 

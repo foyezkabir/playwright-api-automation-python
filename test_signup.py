@@ -3,53 +3,42 @@ import allure
 from api_objects import SignupClient
 from data_factory import UserDataFactory
 from schemas import assert_response_schema, SignupSuccessResponseSchema, SignupErrorResponseSchema
-from reportportal_helpers import ReportPortalHelper
+from decorators import smoke_test, regression_test, api_smoke, validation_test, known_bug, feature_story
 
 # --- Test Suite ---
-@allure.feature('Authentication')
-@allure.story('User Signup')
+@feature_story(feature='Authentication', story='User Signup')
 class TestSignup:
     """Test suite for User Signup API."""
 
-    @allure.title("Test successful user signup with valid data")
-    @allure.description("Verify that a user can successfully register with all required fields")
-    @allure.severity(allure.severity_level.CRITICAL)
-    @pytest.mark.smoke
+    @api_smoke(method="POST", endpoint="/api/authentication/signup")
     def test_signup_success(self, signup_api: SignupClient):
         """Verify successful user registration with valid data."""
-        # Generate test data using factory
+        payload = UserDataFactory.create_signup_payload()
+        response = signup_api.create_user(payload)
+        
+        assert response.status in [200, 201], \
+            f"Expected 200/201, got {response.status}. Body: {response.text()}"
+        assert_response_schema(response.json(), SignupSuccessResponseSchema)
+
+    @regression_test(title="Test duplicate email registration", severity="CRITICAL")
+    def test_signup_duplicate_email(self, signup_api: SignupClient):
+        """Verify error when attempting to register with an existing email."""
         payload = UserDataFactory.create_signup_payload()
         
-        # Log to ReportPortal
-        ReportPortalHelper.log_request(
-            test_name="test_signup_success",
-            method="POST",
-            url="/api/authentication/signup/",
-            payload=payload
-        )
+        first_response = signup_api.create_user(payload)
+        assert first_response.status in [200, 201], "First signup should succeed"
         
-        # Execute API call
-        with allure.step("Send signup request with valid data"):
-            response = signup_api.create_user(payload)
+        duplicate_response = signup_api.create_user(payload)
+        assert duplicate_response.status == 409, \
+            f"Expected 409 for duplicate email, got {duplicate_response.status}"
         
-        # Log response
-        ReportPortalHelper.log_response(
-            test_name="test_signup_success",
-            status_code=response.status,
-            response_body=response.json() if response.ok else response.text()
-        )
-        
-        # Assertions
-        with allure.step(f"Verify response status is 200 or 201"):
-            assert response.status in [200, 201], \
-                f"Expected success (200/201), got {response.status}. Body: {response.text()}"
-        
-        # Schema validation
-        if response.ok:
-            with allure.step("Validate response schema"):
-                response_data = response.json()
-                assert_response_schema(response_data, SignupSuccessResponseSchema)
+        response_data = duplicate_response.json()
+        assert response_data.get("code") == "USERNAME_EXISTS", \
+            f"Expected code USERNAME_EXISTS, got {response_data.get('code')}"
+        assert response_data.get("message") == "User already exists", \
+            f"Expected message 'User already exists', got {response_data.get('message')}"
 
+    @regression_test(title="Test missing required fields", severity="CRITICAL")
     def test_signup_missing_fields(self, signup_api: SignupClient):
         """Verify validation error when required fields are missing."""
         payload = {
@@ -59,6 +48,7 @@ class TestSignup:
         response = signup_api.create_user(payload)
         assert response.status == 400, f"Expected 400, got {response.status}"
 
+    @validation_test(field="email", validation_type="format")
     def test_signup_invalid_email(self, signup_api: SignupClient):
         """Verify validation error for invalid email format."""
         payload = signup_api.default_payload()
@@ -67,16 +57,9 @@ class TestSignup:
         response = signup_api.create_user(payload)
         assert response.status == 400, f"Expected 400, got {response.status}"
 
-    @pytest.mark.xfail(reason="Bug: API accepts mismatched passwords")
-    def test_signup_password_mismatch(self, signup_api: SignupClient):
-        """Verify error when password and confirm_password do not match."""
-        payload = signup_api.default_payload("mismatch")
-        payload["confirm_password"] = "DifferentPassword!"
-        
-        response = signup_api.create_user(payload)
-        assert response.status == 400, f"Expected 400, got {response.status}"
+    # Note: API only uses password field (no confirm_password validation)
 
-    # --- Name Validations ---
+    # --- Name Validations (Security: Frontend validation can be bypassed) ---
     
     @pytest.mark.parametrize("invalid_name, reason", [
         ("Ab", "Name too short"),
@@ -87,9 +70,9 @@ class TestSignup:
         ("User123", "Contains numbers"),
         ("A" * 81, "Name too long")
     ])
-    @pytest.mark.xfail(reason="Bug: API lacks name validation")
+    @known_bug(bug_id="API-001", reason="Security Issue: API lacks name validation - accepts invalid names when frontend is bypassed")
     def test_signup_name_validation_failures(self, signup_api: SignupClient, invalid_name, reason):
-        """Verify name validation rules (parametrized)."""
+        """Verify API rejects invalid names when frontend validation is bypassed (Postman, curl, etc.)."""
         payload = signup_api.default_payload("name_val")
         payload["name"] = invalid_name
         
@@ -99,8 +82,9 @@ class TestSignup:
     # --- Email Validations ---
 
     @pytest.mark.parametrize("domain", ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com"])
+    @validation_test(field="email", validation_type="public domain blocking")
     def test_signup_email_public_domain(self, signup_api: SignupClient, domain):
-        """Verify that public email domains are blocked."""
+        """Verify that API rejects public email domains (aligned with frontend validation)."""
         payload = signup_api.default_payload("public_domain")
         # Replace domain
         user_part = payload["email"].split("@")[0]
@@ -109,7 +93,7 @@ class TestSignup:
         response = signup_api.create_user(payload)
         assert response.status == 400, f"Expected 400 for domain {domain}, got {response.status}"
 
-    # --- Password Validations ---
+    # --- Password Validations (Security: Frontend validation can be bypassed) ---
 
     @pytest.mark.parametrize("password, reason", [
         ("password123!", "Missing uppercase"),
@@ -117,12 +101,11 @@ class TestSignup:
         ("Password!", "Missing number"),
         ("Password123", "Missing special char")
     ])
-    @pytest.mark.xfail(reason="Critical Bug: API returns 500 instead of 400 for password complexity")
+    @known_bug(bug_id="API-003", reason="Critical Security Bug: API crashes (500) with weak passwords when frontend is bypassed")
     def test_signup_password_complexity(self, signup_api: SignupClient, password, reason):
-        """Verify password complexity rules (parametrized)."""
+        """Verify API rejects weak passwords when frontend validation is bypassed (Postman, curl, etc.)."""
         payload = signup_api.default_payload("pass_complex")
         payload["password"] = password
-        payload["confirm_password"] = password
         
         response = signup_api.create_user(payload)
         assert response.status == 400, f"Expected 400 for {reason}, got {response.status}"

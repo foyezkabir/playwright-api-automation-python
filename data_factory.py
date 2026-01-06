@@ -138,7 +138,6 @@ class UserDataFactory:
         name: str = None,
         email: str = None,
         password: str = None,
-        confirm_password: str = None,
         **kwargs
     ) -> Dict[str, Any]:
         """
@@ -148,19 +147,15 @@ class UserDataFactory:
             name: User name (generated if None)
             email: Email address (generated if None)
             password: Password (generated if None)
-            confirm_password: Confirm password (matches password if None)
             **kwargs: Additional fields to include in payload
             
         Returns:
             Complete signup payload dictionary
         """
-        generated_password = password or UserDataFactory.random_password()
-        
         payload = {
             "name": name or UserDataFactory.random_name(),
             "email": email or UserDataFactory.generate_unique_email(),
-            "password": generated_password,
-            "confirm_password": confirm_password or generated_password
+            "password": password or UserDataFactory.random_password()
         }
         
         # Add any additional fields
