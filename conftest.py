@@ -96,7 +96,6 @@ def pytest_sessionfinish(session, exitstatus):
     Automatically update README with latest test results.
     """
     import os
-    import re
     from datetime import datetime
 
     # Only update README if UPDATE_README env variable is set to 'true'
@@ -155,12 +154,21 @@ test_signup_verification.py                        10 tests
 
         # Update README
         readme_path = "README.md"
+        section_header = "## 📈 Test Execution Results"
+
         with open(readme_path, encoding="utf-8") as f:
             content = f.read()
 
-        # Pattern to match the entire Test Execution Results section
-        pattern = r"## 📈 Test Execution Results.*?(?=\n## |\Z)"
-        updated_content = re.sub(pattern, results_section, content, flags=re.DOTALL)
+        # Find section start and replace
+        start_idx = content.find(section_header)
+        if start_idx == -1:
+            updated_content = content + "\n\n" + results_section
+        else:
+            next_section_idx = content.find("\n## ", start_idx + len(section_header))
+            if next_section_idx == -1:
+                updated_content = content[:start_idx] + results_section
+            else:
+                updated_content = content[:start_idx] + results_section + content[next_section_idx:]
 
         with open(readme_path, "w", encoding="utf-8") as f:
             f.write(updated_content)

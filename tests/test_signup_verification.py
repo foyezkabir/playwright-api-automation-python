@@ -19,8 +19,8 @@ class TestSignupVerification:
         signup_response = signup_api.create_user(signup_payload)
         assert signup_response.status in [200, 201], "Signup should succeed"
 
-        # TODO: Get actual confirmation_code from email
-        # UI shows 6-digit OTP input boxes
+        # NOTE: In production, get actual confirmation_code from email service
+        # For testing, we use a mock code - UI shows 6-digit OTP input boxes
         verification_payload = {"email": signup_payload["email"], "confirmation_code": "123456"}
 
         response = signup_api.confirm_signup(verification_payload)

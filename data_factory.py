@@ -81,18 +81,18 @@ class UserDataFactory:
         Returns:
             Random secure password
         """
-        import random
+        import secrets
         import string
 
         # Ensure password meets complexity requirements
         password = [
-            random.choice(string.ascii_uppercase),  # At least one uppercase
-            random.choice(string.ascii_lowercase),  # At least one lowercase
-            random.choice(string.digits),  # At least one digit
+            secrets.choice(string.ascii_uppercase),  # At least one uppercase
+            secrets.choice(string.ascii_lowercase),  # At least one lowercase
+            secrets.choice(string.digits),  # At least one digit
         ]
 
         if include_special:
-            password.append(random.choice("!@#$%^&*"))
+            password.append(secrets.choice("!@#$%^&*"))
 
         # Fill the rest with random characters
         remaining_length = length - len(password)
@@ -100,11 +100,17 @@ class UserDataFactory:
         if include_special:
             all_chars += "!@#$%^&*"
 
-        password.extend(random.choice(all_chars) for _ in range(remaining_length))
+        password.extend(secrets.choice(all_chars) for _ in range(remaining_length))
 
-        # Shuffle to avoid predictable patterns
-        random.shuffle(password)
-        return "".join(password)
+        # Shuffle using secrets for security
+        # Convert to list, shuffle indices, and reconstruct
+        indices = list(range(len(password)))
+        shuffled_password = []
+        while indices:
+            idx = secrets.choice(indices)
+            shuffled_password.append(password[idx])
+            indices.remove(idx)
+        return "".join(shuffled_password)
 
     @staticmethod
     def random_phone_number(country_code: str = "+1") -> str:
@@ -178,10 +184,11 @@ class UserDataFactory:
             payload[field_to_invalidate] = invalid_value
         else:
             # Use common invalid values based on field
-            invalid_values = {
+            # These are intentional test values for validation testing, not real credentials
+            invalid_values = {  # noqa: S105  # NOSONAR - Test data, not credentials
                 "email": "invalid-email-format",
                 "name": "User@123!",
-                "password": "weak",
+                "password": "weak",  # noqa: S105  # NOSONAR - Intentionally weak for testing
                 "confirm_password": "mismatch_password",
             }
             payload[field_to_invalidate] = invalid_values.get(field_to_invalidate, "")

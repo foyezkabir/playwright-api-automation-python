@@ -20,13 +20,7 @@ on:
           - staging
           - prod
 
-permissions:
-  contents: write
-  checks: write
-  pull-requests: write
-  pages: write
-  id-token: write
-  actions: write  # Required for cleanup job to delete workflow runs
+# Permissions set at job level for security (principle of least privilege)
 
 # Global environment variables
 env:
@@ -231,6 +225,9 @@ jobs:
     name: 🧪 Run Tests
     runs-on: ubuntu-latest
     needs: [build, smoke-tests]
+    permissions:
+      checks: write
+      pull-requests: write
     strategy:
       matrix:
         python-version: ['3.11', '3.12']
@@ -277,8 +274,8 @@ jobs:
       - name: 📊 Generate Allure Report
         if: always()
         run: |
-          # Install Allure CLI
-          curl -o allure-2.25.0.tgz -L https://github.com/allure-framework/allure2/releases/download/2.25.0/allure-2.25.0.tgz
+          # Install Allure CLI (enforce HTTPS-only with TLS 1.2+)
+          curl --proto "=https" --tlsv1.2 -sSf -L -o allure-2.25.0.tgz https://github.com/allure-framework/allure2/releases/download/2.25.0/allure-2.25.0.tgz
           tar -zxvf allure-2.25.0.tgz
           sudo mv allure-2.25.0 /opt/allure
           sudo ln -s /opt/allure/bin/allure /usr/bin/allure
@@ -286,7 +283,7 @@ jobs:
           # Generate report
           allure generate ./allure-results -o ./allure-report --clean
       
-      - name: � Generate Artifact Metadata
+      - name: 📅 Generate Artifact Metadata
         if: always()
         run: |
           CREATED_AT=$(TZ='Asia/Dhaka' date '+%d/%m/%Y %H:%M:%S')
@@ -332,7 +329,7 @@ jobs:
       
       - name: 📈 Publish Test Results
         if: always()
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@170bf24d20d201b842d7a52403b46b80f3a14d13  # v2.19.0
         with:
           files: ./test-results/junit.xml
           check_name: Test Results (Python ${{ matrix.python-version }})
@@ -365,13 +362,15 @@ jobs:
         continue-on-error: true
       
       - name: 🔬 SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v5
+        uses: SonarSource/sonarqube-scan-action@2500896589ef8f7247069a56136f8dc177c27ccf  # v6.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
         with:
+          projectBaseDir: .
           args: >
+            -Dsonar.projectPropertiesPath=sonarqube/sonar-project.properties
             -Dsonar.python.coverage.reportPaths=coverage.xml
       
       - name: 📋 SonarCloud Summary
@@ -422,6 +421,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, coverage, sonarcloud]
     if: always() && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
     
     steps:
       - name: 📥 Checkout code
@@ -438,29 +441,31 @@ jobs:
       
       - name: 🏠 Create root redirect page
         run: |
-          cat > publish/index.html << 'EOF'
+          REPORT_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-report/index.html"
+          cat > publish/index.html << EOF
           <!DOCTYPE html>
           <html>
           <head>
             <meta charset="utf-8">
             <title>Redirecting to Allure Report...</title>
-            <meta http-equiv="refresh" content="0; url=allure-report/index.html">
+            <meta http-equiv="refresh" content="0; url=${REPORT_URL}">
             <script>
-              window.location.href = "allure-report/index.html";
+              window.location.href = "${REPORT_URL}";
             </script>
           </head>
           <body>
-            <p>Redirecting to <a href="allure-report/index.html">Allure Report</a>...</p>
+            <p>Redirecting to <a href="${REPORT_URL}">Allure Report</a>...</p>
           </body>
           </html>
           EOF
       
       - name: 🌐 Publish Allure Report to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e  # v3.9.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./publish
           publish_branch: gh-pages
+          force_orphan: true
       
       - name: 📋 Report URL in Summary
         run: |
@@ -522,7 +527,7 @@ jobs:
       
       - name: 📨 Send Slack Notification
         if: always()
-        uses: 8398a7/action-slack@v3
+        uses: slackapi/slack-github-action@70cd7be8e40a46e8169edfaa8aae9e9de75fd5d5  # v1.26.0
         with:
           status: custom
           custom_payload: |
@@ -541,7 +546,7 @@ jobs:
                   "fields": [
                     {"type": "mrkdwn", "text": "*Repository:*\n${{ github.repository }}"},
                     {"type": "mrkdwn", "text": "*Branch:*\n${{ github.ref_name }}"},
-                    {"type": "mrkdwn", "text": "*Commit:*\n${{ github.event.head_commit.message }}"},
+                    {"type": "mrkdwn", "text": "*Run:*\n#${{ github.run_number }}"},
                     {"type": "mrkdwn", "text": "*Author:*\n${{ github.actor }}"}
                   ]
                 },
@@ -566,10 +571,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: [notify]
     if: always()
+    permissions:
+      actions: write
     
     steps:
       - name: 🗑️ Delete old workflow runs
-        uses: Mattraks/delete-workflow-runs@v2
+        uses: Mattraks/delete-workflow-runs@830a412ced5fb40157e64e0f70fe67113ec7778e  # v2.0.6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}

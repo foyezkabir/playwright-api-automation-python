@@ -66,10 +66,9 @@ def parse_test_results(output):
 
 def generate_results_section(stats):
     """Generate the updated results section for README"""
+    status_emoji = "✅" if stats["failed"] == 0 else "❌"
 
-    "✅" if stats["failed"] == 0 else "❌"
-
-    results_section = f"""## 📈 Test Execution Results
+    results_section = f"""## 📈 Test Execution Results {status_emoji}
 
 ### Latest Test Run ({stats["timestamp"]})
 ```
@@ -101,16 +100,26 @@ def update_readme(results_section):
     """Update the README.md file with new test results"""
 
     readme_path = "README.md"
+    section_header = "## 📈 Test Execution Results"
 
     try:
         with open(readme_path, encoding="utf-8") as f:
             content = f.read()
 
-        # Pattern to match the entire Test Execution Results section
-        pattern = r"## 📈 Test Execution Results.*?(?=\n## |\Z)"
-
-        # Replace the section
-        updated_content = re.sub(pattern, results_section, content, flags=re.DOTALL)
+        # Find section start
+        start_idx = content.find(section_header)
+        if start_idx == -1:
+            # Section doesn't exist, append it
+            updated_content = content + "\n\n" + results_section
+        else:
+            # Find the next section (## ) or end of file
+            next_section_idx = content.find("\n## ", start_idx + len(section_header))
+            if next_section_idx == -1:
+                # No next section, replace to end
+                updated_content = content[:start_idx] + results_section
+            else:
+                # Replace up to next section
+                updated_content = content[:start_idx] + results_section + content[next_section_idx:]
 
         # Write back to file
         with open(readme_path, "w", encoding="utf-8") as f:
@@ -133,7 +142,7 @@ def main():
     print("-" * 50)
 
     # Run tests
-    output, return_code = run_tests_and_capture_output()
+    output, _ = run_tests_and_capture_output()
 
     if output is None:
         print("❌ Failed to run tests")
