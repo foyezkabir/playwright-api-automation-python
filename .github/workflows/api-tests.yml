@@ -461,31 +461,26 @@ jobs:
             echo "### $BADGE Overall Coverage: ${COVERAGE_PCT}% ($STATUS)" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             
-            # Extract file-level coverage if available
+            # Extract file-level coverage
             echo "| File | Coverage |" >> $GITHUB_STEP_SUMMARY
             echo "|------|----------|" >> $GITHUB_STEP_SUMMARY
             
-            # Parse coverage.xml for file-level details using Python for reliable XML parsing
-            python3 << 'PYEOF' >> $GITHUB_STEP_SUMMARY
-import xml.etree.ElementTree as ET
-try:
-    tree = ET.parse('coverage/coverage.xml')
-    root = tree.getroot()
-    for package in root.findall('.//package'):
-        for cls in package.findall('.//class'):
-            filename = cls.get('filename', 'unknown')
-            line_rate = float(cls.get('line-rate', 0))
-            pct = int(line_rate * 100)
-            if pct >= 80:
-                icon = "✅"
-            elif pct >= 50:
-                icon = "⚠️"
-            else:
-                icon = "❌"
-            print(f"| {icon} {filename} | {pct}% |")
-except Exception as e:
-    print(f"| (Error parsing: {e}) | - |")
-PYEOF
+            # Parse coverage.xml using Python for reliable XML parsing
+            python3 -c "
+          import xml.etree.ElementTree as ET
+          try:
+              tree = ET.parse('coverage/coverage.xml')
+              root = tree.getroot()
+              for package in root.findall('.//package'):
+                  for cls in package.findall('.//class'):
+                      filename = cls.get('filename', 'unknown')
+                      line_rate = float(cls.get('line-rate', 0))
+                      pct = int(line_rate * 100)
+                      icon = '✅' if pct >= 80 else ('⚠️' if pct >= 50 else '❌')
+                      print(f'| {icon} {filename} | {pct}% |')
+          except Exception as e:
+              print(f'| (Error: {e}) | - |')
+          " >> $GITHUB_STEP_SUMMARY
             
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "📊 [View Full HTML Report](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/coverage-report)" >> $GITHUB_STEP_SUMMARY
