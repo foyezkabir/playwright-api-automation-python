@@ -329,7 +329,7 @@ jobs:
       
       - name: 📈 Publish Test Results
         if: always()
-        uses: EnricoMi/publish-unit-test-result-action@170bf24d20d201b842d7a52403b46b80f3a14d13  # v2.19.0
+        uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: ./test-results/junit.xml
           check_name: Test Results (Python ${{ matrix.python-version }})
@@ -362,7 +362,7 @@ jobs:
         continue-on-error: true
       
       - name: 🔬 SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@2500896589ef8f7247069a56136f8dc177c27ccf  # v6.0.0
+        uses: SonarSource/sonarqube-scan-action@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -460,7 +460,7 @@ jobs:
           EOF
       
       - name: 🌐 Publish Allure Report to GitHub Pages
-        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e  # v3.9.3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./publish
@@ -527,7 +527,7 @@ jobs:
       
       - name: 📨 Send Slack Notification
         if: always()
-        uses: slackapi/slack-github-action@70cd7be8e40a46e8169edfaa8aae9e9de75fd5d5  # v1.26.0
+        uses: 8398a7/action-slack@v3
         with:
           status: custom
           custom_payload: |
@@ -576,7 +576,7 @@ jobs:
     
     steps:
       - name: 🗑️ Delete old workflow runs
-        uses: Mattraks/delete-workflow-runs@830a412ced5fb40157e64e0f70fe67113ec7778e  # v2.0.6
+        uses: Mattraks/delete-workflow-runs@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
