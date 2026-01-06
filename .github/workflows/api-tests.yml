@@ -26,6 +26,7 @@ permissions:
   pull-requests: write
   pages: write
   id-token: write
+  actions: write  # Required for cleanup job to delete workflow runs
 
 # Global environment variables
 env:
@@ -176,11 +177,51 @@ jobs:
           playwright install --with-deps chromium
       
       - name: 💨 Run Smoke Tests
+        id: smoke
+        run: |
+          # Run smoke tests and capture output
+          pytest tests/ -v -m "smoke" --tb=short --maxfail=3 --junitxml=smoke-results.xml 2>&1 | tee smoke-output.txt
+        continue-on-error: true
+      
+      - name: 📋 Generate Smoke Test Summary
+        if: always()
         run: |
           echo "## 💨 Smoke Test Results" >> $GITHUB_STEP_SUMMARY
-          pytest tests/ -v -m "smoke" --tb=short --maxfail=3 2>&1 | tail -20 >> $GITHUB_STEP_SUMMARY || true
-          pytest tests/ -v -m "smoke" --tb=short --maxfail=3
-        continue-on-error: true
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Extract test counts
+          PASSED=$(grep -oP '\d+(?= passed)' smoke-output.txt | head -1 || echo "0")
+          FAILED=$(grep -oP '\d+(?= failed)' smoke-output.txt | head -1 || echo "0")
+          TOTAL=$((PASSED + FAILED))
+          
+          # Status badge
+          if [ "$FAILED" = "0" ] && [ "$PASSED" != "0" ]; then
+            echo "### ✅ All Smoke Tests Passed!" >> $GITHUB_STEP_SUMMARY
+          elif [ "$FAILED" != "0" ]; then
+            echo "### ❌ Some Smoke Tests Failed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ⚠️ No Smoke Tests Found" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| ✅ Passed | $PASSED |" >> $GITHUB_STEP_SUMMARY
+          echo "| ❌ Failed | $FAILED |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📊 Total | $TOTAL |" >> $GITHUB_STEP_SUMMARY
+          
+          # Extract duration
+          DURATION=$(grep -oP '\d+\.\d+s' smoke-output.txt | tail -1 || echo "N/A")
+          echo "| ⏱️ Duration | $DURATION |" >> $GITHUB_STEP_SUMMARY
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "<details>" >> $GITHUB_STEP_SUMMARY
+          echo "<summary>📜 View Test Details</summary>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          grep -E "PASSED|FAILED|ERROR" smoke-output.txt | head -20 >> $GITHUB_STEP_SUMMARY || echo "No test results found" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
 
   # ═══════════════════════════════════════════════════════════════════════════
   # STAGE 4: FULL TEST SUITE
@@ -324,10 +365,11 @@ jobs:
         continue-on-error: true
       
       - name: 🔬 SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
+        uses: SonarSource/sonarqube-scan-action@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
         with:
           args: >
             -Dsonar.python.coverage.reportPaths=coverage.xml
@@ -438,7 +480,7 @@ jobs:
   notify:
     name: 📢 Notify
     runs-on: ubuntu-latest
-    needs: [test, deploy]
+    needs: [code-quality, type-check, build, smoke-tests, test, sonarcloud, coverage, deploy, security-scan]
     if: always()
     
     steps:
@@ -462,15 +504,15 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Stage | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| 🎨 Code Quality | ${{ needs.code-quality.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 📊 Type Check | ${{ needs.type-check.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔨 Build | ${{ needs.build.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 💨 Smoke Tests | ${{ needs.smoke-tests.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🧪 Tests | ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| � SonarCloud | ${{ needs.sonarcloud.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 📈 Coverage | ${{ needs.coverage.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🚀 Deploy | ${{ needs.deploy.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔒 Security | ${{ needs.security-scan.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🎨 Code Quality | ${{ needs.code-quality.result || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📊 Type Check | ${{ needs.type-check.result || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔨 Build | ${{ needs.build.result || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 💨 Smoke Tests | ${{ needs.smoke-tests.result || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🧪 Tests | ${{ needs.test.result || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔬 SonarCloud | ${{ needs.sonarcloud.result || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📈 Coverage | ${{ needs.coverage.result || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🚀 Deploy | ${{ needs.deploy.result || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔒 Security | ${{ needs.security-scan.result || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Overall Status:** ${{ steps.summary.outputs.status }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -533,6 +575,7 @@ jobs:
           repository: ${{ github.repository }}
           retain_days: 30
           keep_minimum_runs: 10
+        continue-on-error: true
       
       - name: 📋 Cleanup Summary
         run: |

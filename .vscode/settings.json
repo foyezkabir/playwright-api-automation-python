@@ -13,5 +13,9 @@
     },
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": false,
-    "python.linting.flake8Enabled": true
+    "python.linting.flake8Enabled": true,
+    "sonarlint.connectedMode.project": {
+        "connectionId": "foyezkabir",
+        "projectKey": "foyezkabir_playwright-api-automation-python"
+    }
 }
