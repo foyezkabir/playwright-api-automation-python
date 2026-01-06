@@ -565,10 +565,12 @@ jobs:
           fi
       
       - name: 📋 Create GitHub Summary
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           echo "## 📢 Pipeline Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Commit:** ${{ github.event.head_commit.message }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** $COMMIT_MESSAGE" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Stage | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
@@ -601,13 +603,6 @@ jobs:
                     "type": "plain_text",
                     "text": "${{ needs.test.result == 'success' && '✅' || '❌' }} API Tests - ${{ needs.test.result }}",
                     "emoji": true
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Commit:* ${{ github.event.head_commit.message }}"
                   }
                 },
                 {
