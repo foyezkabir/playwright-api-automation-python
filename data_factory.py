@@ -4,7 +4,7 @@ This module provides utilities for creating test data for API automation.
 """
 
 import time
-from typing import Any
+from typing import Any, Optional
 
 from faker import Faker
 
@@ -54,7 +54,7 @@ class UserDataFactory:
         return fake.last_name()
 
     @staticmethod
-    def random_email(domain: str = None) -> str:
+    def random_email(domain: Optional[str] = None) -> str:
         """
         Generates a random email address.
 
@@ -142,7 +142,9 @@ class UserDataFactory:
         }
 
     @staticmethod
-    def create_signup_payload(name: str = None, email: str = None, password: str = None, **kwargs) -> dict[str, Any]:
+    def create_signup_payload(
+        name: Optional[str] = None, email: Optional[str] = None, password: Optional[str] = None, **kwargs
+    ) -> dict[str, Any]:
         """
         Creates a complete signup payload with optional custom values.
 

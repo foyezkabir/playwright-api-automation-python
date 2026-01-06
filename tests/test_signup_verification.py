@@ -108,7 +108,7 @@ class TestResendOTP:
     @validation_test(field="email", validation_type="missing field")
     def test_resend_otp_missing_email(self, signup_api: SignupClient):
         """Verify error when email is missing in resend request."""
-        resend_payload = {}
+        resend_payload: dict[str, str] = {}
 
         response = signup_api.resend_confirmation_code(resend_payload)
         assert response.status == 400, f"Expected 400 for missing email, got {response.status}"

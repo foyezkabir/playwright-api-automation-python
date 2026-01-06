@@ -465,15 +465,27 @@ jobs:
             echo "| File | Coverage |" >> $GITHUB_STEP_SUMMARY
             echo "|------|----------|" >> $GITHUB_STEP_SUMMARY
             
-            # Parse coverage.xml for file-level details
-            grep -oP 'filename="\K[^"]+|line-rate="\K[0-9.]+' coverage/coverage.xml | \
-            paste - - | while read file rate; do
-              pct=$(echo "$rate * 100" | bc | cut -d'.' -f1)
-              if [ "$pct" -ge 80 ]; then icon="✅"; 
-              elif [ "$pct" -ge 50 ]; then icon="⚠️"; 
-              else icon="❌"; fi
-              echo "| $icon $file | ${pct}% |" >> $GITHUB_STEP_SUMMARY
-            done 2>/dev/null || echo "| (Details unavailable) | - |" >> $GITHUB_STEP_SUMMARY
+            # Parse coverage.xml for file-level details using Python for reliable XML parsing
+            python3 << 'PYEOF' >> $GITHUB_STEP_SUMMARY
+import xml.etree.ElementTree as ET
+try:
+    tree = ET.parse('coverage/coverage.xml')
+    root = tree.getroot()
+    for package in root.findall('.//package'):
+        for cls in package.findall('.//class'):
+            filename = cls.get('filename', 'unknown')
+            line_rate = float(cls.get('line-rate', 0))
+            pct = int(line_rate * 100)
+            if pct >= 80:
+                icon = "✅"
+            elif pct >= 50:
+                icon = "⚠️"
+            else:
+                icon = "❌"
+            print(f"| {icon} {filename} | {pct}% |")
+except Exception as e:
+    print(f"| (Error parsing: {e}) | - |")
+PYEOF
             
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "📊 [View Full HTML Report](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/coverage-report)" >> $GITHUB_STEP_SUMMARY
@@ -506,6 +518,13 @@ jobs:
         with:
           name: allure-report-3.12-${{ github.run_number }}
           path: ./publish/allure-report
+      
+      - name: 📥 Download Coverage Report (Python 3.12)
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
+        with:
+          name: coverage-report-3.12-${{ github.run_number }}
+          path: ./publish/coverage-report
+        continue-on-error: true
       
       - name: 🏠 Create root redirect page
         run: |

@@ -1,5 +1,6 @@
 import logging
 import os
+from collections.abc import Generator
 
 import pytest
 from playwright.sync_api import APIRequestContext, Playwright
@@ -44,7 +45,7 @@ def print_configuration():
 
 
 @pytest.fixture(scope="session")
-def api_context(playwright: Playwright) -> APIRequestContext:
+def api_context(playwright: Playwright) -> Generator[APIRequestContext, None, None]:
     """Creates a shared API Request Context for the session."""
     headers = {"Content-Type": "application/json", "User-Agent": "Playwright-API-Tests/1.0"}
 
