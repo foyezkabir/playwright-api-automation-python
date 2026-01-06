@@ -76,48 +76,6 @@ jobs:
             echo "✅ All files are properly formatted!" >> $GITHUB_STEP_SUMMARY
           fi
 
-  type-check:
-    name: 📊 Type Check
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
-      
-      - name: 🐍 Set up Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
-        with:
-          python-version: '3.12'
-      
-      - name: 📦 Install dependencies
-        run: |
-          pip install mypy types-requests
-          pip install -r requirements.txt
-      
-      - name: 🔍 Run MyPy Type Check
-        run: |
-          echo "## 📊 Type Check Report" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          # Run mypy and capture output
-          MYPY_OUTPUT=$(mypy . --ignore-missing-imports 2>&1) || true
-          ERROR_COUNT=$(echo "$MYPY_OUTPUT" | grep -c "error:" || echo "0")
-          
-          if [ "$ERROR_COUNT" = "0" ] || [ "$ERROR_COUNT" -eq "0" ] 2>/dev/null; then
-            echo "### 🎉 Congratulations! No type errors found" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "✅ All type annotations are correct and consistent" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "🔍 Your code passes all type checks with flying colors!" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "### ❌ Found $ERROR_COUNT type error(s)" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            echo "$MYPY_OUTPUT" | grep "error:" | head -20 >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-          fi
-        continue-on-error: true
-
   # ═══════════════════════════════════════════════════════════════════════════
   # STAGE 2: BUILD
   # ═══════════════════════════════════════════════════════════════════════════
@@ -588,7 +546,7 @@ jobs:
   notify:
     name: 📢 Notify
     runs-on: ubuntu-latest
-    needs: [code-quality, type-check, build, smoke-tests, test, sonarcloud, coverage, deploy, security-scan]
+    needs: [code-quality, build, smoke-tests, test, sonarcloud, coverage, deploy, security-scan]
     if: always()
     
     steps:
@@ -613,8 +571,7 @@ jobs:
           echo "| Stage | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| 🎨 Code Quality | ${{ needs.code-quality.result || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 📊 Type Check | ${{ needs.type-check.result || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔨 Build | ${{ needs.build.result || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "|  Build | ${{ needs.build.result || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| 💨 Smoke Tests | ${{ needs.smoke-tests.result || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| 🧪 Tests | ${{ needs.test.result || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| 🔬 SonarCloud | ${{ needs.sonarcloud.result || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY

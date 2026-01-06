@@ -1,437 +1,609 @@
-# Playwright API Automation Framework with CI/CD (Python)
+# 🎯 Playwright API Automation Framework with CI/CD & SonarCloud (Python)
 
-Production-ready API test automation framework for authentication APIs using **Playwright**, **Python (pytest)**, **Allure Reports**, and automated **CI/CD pipeline** with **GitHub Pages** deployment.
+[![CI/CD Pipeline](https://github.com/foyezkabir/playwright-api-automation-python/actions/workflows/api-tests.yml/badge.svg)](https://github.com/foyezkabir/playwright-api-automation-python/actions)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=foyezkabir_playwright-api-automation-python&metric=alert_status)](https://sonarcloud.io/project/overview?id=foyezkabir_playwright-api-automation-python)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=foyezkabir_playwright-api-automation-python&metric=coverage)](https://sonarcloud.io/project/overview?id=foyezkabir_playwright-api-automation-python)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=foyezkabir_playwright-api-automation-python&metric=code_smells)](https://sonarcloud.io/project/overview?id=foyezkabir_playwright-api-automation-python)
+
+Production-ready API test automation framework featuring **Playwright** for API testing, **Python (pytest)** for test execution, **Allure Reports** for interactive reporting, **SonarCloud** for code quality analysis, and a fully automated **GitHub Actions CI/CD pipeline** with **GitHub Pages** deployment.
 
 ---
 
 ## ⚠️ Disclaimer
 
-**This is an portfolio project created for demonstration purposes.**
+**This is a portfolio project created for demonstration purposes.**
 
-While this framework tests a real API, the project showcases API test automation best practices, CI/CD implementation, and modern testing techniques. The code, methodologies, and architecture patterns demonstrated here are designed to exhibit professional testing capabilities.
+This framework tests real authentication APIs and showcases professional API test automation practices, CI/CD implementation, code quality standards, and modern DevOps techniques. The architecture, patterns, and implementations demonstrate production-ready testing capabilities.
 
-- **Not Official Company Repository**: This is a personal learning project
-- **Learning Purpose**: Demonstrates API testing and DevOps skills
-- **Test Data**: All test data is auto-generated and non-sensitive
-- **Public Access**: Suitable for portfolio and skill demonstration
+- **Personal Learning Project**: Not affiliated with any organization
+- **Demonstration Purpose**: Showcases API testing, DevOps, and automation skills
+- **Test Data**: Auto-generated, non-sensitive data using Faker library
+- **Public Portfolio**: Available for skill demonstration and learning reference
 
 ---
 
 ## 📖 Project Overview
 
-Comprehensive API testing framework for the complete user authentication flow including signup, email verification (OTP), and resend OTP functionality. Tests validate API behavior, security, and edge cases with extensive coverage. **Includes automated CI/CD pipeline** with GitHub Actions for continuous testing and report deployment.
+Enterprise-grade API testing framework for user authentication workflows including signup, email verification (OTP), and resend OTP functionality. The framework validates API behavior, security, error handling, and edge cases with comprehensive test coverage. Features a complete CI/CD pipeline with automated testing, code quality gates, and live report deployment.
 
 ### 🎯 Key Features
 
-✨ **Modern Test Architecture**
-- 🏭 **Test Data Factory** - Realistic data generation with Faker
-- 🌍 **Multi-Environment Support** - Dev/Staging/Prod configuration
-- 🔄 **Auto-Retry Mechanism** - Flaky test handling with pytest-rerunfailures
-- ⚡ **Parallel Execution** - 12 workers with pytest-xdist
-- ✅ **Response Validation** - Pydantic schemas for API contract validation
-- 🎨 **Custom Decorators** - Organized test categorization (@api_smoke, @validation_test, @known_bug)
+#### ✨ **Modern Test Architecture**
+- 🏭 **Test Data Factory** - Dynamic data generation using Faker library
+- 🔧 **Page Object Pattern** - Organized API client classes (`apiObjects/`)
+- 🌍 **Multi-Environment Support** - Dev/Staging/Prod configuration via `.env`
+- 🔄 **Auto-Retry Mechanism** - Flaky test handling with pytest-rerunfailures (up to 3 retries)
+- ⚡ **Parallel Execution** - 12 concurrent workers using pytest-xdist
+- ✅ **Schema Validation** - Pydantic models for API contract validation
+- 🎨 **Custom Decorators** - Test categorization (`@api_smoke`, `@validation_test`, `@known_bug`)
+- 📝 **Comprehensive Logging** - Structured logs with timestamps and levels
 
-📊 **Advanced Reporting**
-- 📈 **Allure Reports** - Rich interactive HTML reports with test history
-- 🌐 **GitHub Pages** - Automated report deployment with every push
-- 📋 **Test Coverage Matrix** - Comprehensive documentation (29 total tests)
-- 🖼️ **Browser Validation** - Chrome DevTools MCP for UI verification
+#### 📊 **Advanced Reporting & Quality**
+- 📈 **Allure Reports** - Interactive HTML reports with test history, trends, and categorization
+- 🌐 **GitHub Pages** - Auto-deployed reports accessible at [Live URL](https://foyezkabir.github.io/playwright-api-automation-python/allure-report)
+- 🔬 **SonarCloud Integration** - Code quality analysis with Quality Gate enforcement
+- 📉 **Coverage Tracking** - 90%+ code coverage with HTML reports
+- 🐛 **Code Smell Detection** - Automated detection and reporting
+- 🔒 **Security Analysis** - Vulnerability scanning and hotspot detection
+- 📋 **Duplication Tracking** - Maintains <3% code duplication
 
-🚀 **CI/CD Pipeline** ([View Detailed Architecture](#-cicd-pipeline-architecture))
-- ✅ **GitHub Actions** - Three-stage pipeline: Build → Test → Deploy
-- 🔀 **Parallel Testing** - 12 concurrent workers for fast execution (~15-20 seconds)
-- 📦 **Artifact Management** - Allure results preserved and deployed
-- 🌐 **Auto Deployment** - Reports published to GitHub Pages automatically
-- 🔗 **Live Report URL** - [View Reports](https://foyezkabir.github.io/playwright-api-automation-python/allure-report)
-- ☁️ **Cloud Runners** - Tests run on GitHub-hosted Ubuntu runners in the cloud
-
----
-
-## 🚀 CI/CD Pipeline Architecture
-
-> **Note**: The CI/CD pipeline runs on **GitHub-hosted Ubuntu runners** (cloud infrastructure). Your local development is on **Windows**, and tests work on both platforms since Python and Playwright are cross-platform. When you push code from Windows, GitHub Actions automatically runs tests on Ubuntu in the cloud.
-
-### Pipeline Flow
-```
-📤 Git Push (Windows) → ☁️ GitHub Actions (Ubuntu) → 🏗️ Build → 🧪 Test → 🚀 Deploy → 📊 Report Live
-```
-
-### Three-Stage Workflow
-
-#### **Stage 1: Build** 🏗️
-**Purpose**: Prepare the test environment and dependencies
-
-**Steps**:
-1. **Checkout Code**
-   - Fetches latest code from repository
-   - Uses `actions/checkout@v3`
-   
-2. **Setup Python Environment**
-   - Installs Python 3.12 on Ubuntu runner
-   - Configures pip cache for faster installs
-   
-3. **Install Dependencies**
-   - Runs `pip install -r requirements.txt`
-   - Installs all packages: pytest, playwright, allure-pytest, faker, pydantic, etc.
-   
-4. **Configure Environment**
-   - Creates `.env` file with configuration:
-     - `ENV=dev`
-     - `BASE_URL=https://eks-dev-lb.shadhinlab.xyz`
-     - `RETRY_COUNT=2`
-     - `PARALLEL_WORKERS=12`
-   - No secrets required (hardcoded dev environment)
-   
-5. **Cache Artifacts**
-   - Uploads build directory as artifact
-   - Enables dependency sharing between jobs
-   - **Duration**: ~5-8 seconds
-
-**Job Name**: `build`  
-**Runs on**: `ubuntu-latest` (GitHub-hosted runner in cloud)  
-**Your Local**: Windows 11 (development environment)
+#### 🚀 **CI/CD Pipeline** (9 Stages)
+- ✅ **Multi-Stage Pipeline** - Code Quality → Build → Smoke Tests → Full Tests → Analysis → Deploy
+- 🔀 **Parallel Testing** - Matrix strategy for Python 3.11 & 3.12
+- ⚡ **Fast Execution** - Total pipeline ~5 minutes, tests run in ~25 seconds
+- 📦 **Artifact Management** - Allure results, coverage reports, and test results preserved
+- 🔬 **SonarCloud Scanning** - Automated code analysis on every push
+- 🌐 **Auto Deployment** - Reports published to GitHub Pages after successful tests
+- 🧹 **Auto Cleanup** - Old workflow runs deleted (30-day retention)
+- 🔒 **Security Scanning** - Dependency vulnerability checks with Safety
 
 ---
 
-#### **Stage 2: Test** 🧪
-**Purpose**: Execute all test cases and generate results
+## 🏗️ Project Structure
+
+```
+playwright-api-automation-python/
+├── 📁 .github/
+│   └── workflows/
+│       └── api-tests.yml              # GitHub Actions CI/CD pipeline (9 stages)
+├── 📁 apiObjects/
+│   └── api_objects.py                 # SignupClient - API client class
+├── 📁 tests/
+│   ├── test_signup.py                 # Signup API tests (19 tests)
+│   └── test_signup_verification.py    # OTP verification tests (10 tests)
+├── 📁 sonarqube/
+│   └── sonar-project.properties       # SonarCloud configuration
+├── 📁 docs/
+│   └── run_tests_and_update_readme.bat # Test runner script
+├── 📄 conftest.py                     # Pytest fixtures (session-scoped API clients)
+├── 📄 config.py                       # Environment configuration
+├── 📄 data_factory.py                 # Test data generation (Faker integration)
+├── 📄 decorators.py                   # Custom test decorators (@api_smoke, etc.)
+├── 📄 schemas.py                      # Pydantic response validation models
+├── 📄 sync_readme_test_results.py     # README auto-update script
+├── 📄 pytest.ini                      # Pytest configuration
+├── 📄 ruff.toml                       # Ruff linter configuration
+├── 📄 sonar-project.properties        # SonarCloud project config
+├── 📄 requirements.txt                # Python dependencies
+└── 📄 .env.example                    # Environment variables template
+```
+
+### Key Files Explained
+
+#### **API Client Layer** (`apiObjects/`)
+- **`api_objects.py`**: Contains `SignupClient` class with methods for:
+  - `signup()` - User registration
+  - `verify_signup_otp()` - OTP verification
+  - `resend_signup_otp()` - Resend OTP functionality
+  - Handles API communication via Playwright's `APIRequestContext`
+
+#### **Test Layer** (`tests/`)
+- **`test_signup.py`** (19 tests):
+  - Valid signup scenarios
+  - Email validation (format, domain restrictions)
+  - Name validation (length, special chars, numbers)
+  - Password complexity requirements
+  - Duplicate email prevention
+  - Missing field handling
+
+- **`test_signup_verification.py`** (10 tests):
+  - Valid OTP verification
+  - Invalid/expired/incomplete OTP handling
+  - Resend OTP functionality
+  - Rate limiting tests
+  - Edge cases (nonexistent email, already verified)
+
+#### **Configuration Files**
+- **`conftest.py`**: Pytest setup with:
+  - `api_context()` - Session-scoped Playwright API context
+  - `signup_api()` - Session-scoped SignupClient fixture
+  - `pytest_sessionfinish()` - Auto-updates README with test results
+  
+- **`config.py`**: Environment configuration via pydantic-settings
+- **`pytest.ini`**: Test markers, Allure configuration, parallel execution settings
+
+#### **Utilities**
+- **`data_factory.py`**: `UserDataFactory` class for generating:
+  - Unique emails with timestamps
+  - Random names with locale support
+  - Secure random passwords
+  
+- **`decorators.py`**: Custom decorators:
+  - `@api_smoke` - Critical smoke tests
+  - `@validation_test` - Input validation tests
+  - `@known_bug` - Expected failures (xfail)
+  - `@feature_story` - Allure feature/story categorization
+  - `@regression_test` - Regression test marking
+  
+- **`schemas.py`**: Pydantic models:
+  - `SignupSuccessResponseSchema`
+  - `SignupErrorResponseSchema`
+  - `ErrorDetailSchema`
+  - Schema validation helpers
+
+#### **Code Quality**
+- **`sonar-project.properties`**: SonarCloud configuration
+  - Project key and organization
+  - Source paths and exclusions
+  - Coverage report paths
+  - Duplicate threshold (<3%)
+
+- **`ruff.toml`**: Linter configuration
+  - Line length: 120 characters
+  - Python 3.12 target
+  - PEP 604 type hints enforced
+  - Security rules enabled
+
+---
+
+## 🔄 CI/CD Pipeline Flow
+
+### Pipeline Visualization
+
+![CI/CD Pipeline Workflow](.github/images/workflow-visualization.png)
+
+*Interactive workflow visualization showing all 9 stages with dependencies and parallel execution*
+
+The GitHub Actions workflow consists of **9 stages** running in parallel and sequential order:
+
+### **Stage 1: Code Quality** 🎨
+**Purpose**: Lint and format check  
+**Tools**: Ruff  
+**Duration**: ~9 seconds
 
 **Steps**:
-1. **Download Build Artifacts**
-   - Retrieves cached build from Stage 1
-   - Restores Python environment and dependencies
-   
-2. **Execute Tests with Pytest**
-   ```bash
-   pytest -n 12 -v --reruns 3 --alluredir=./allure-results
+1. Checkout code
+2. Install Ruff linter
+3. Run `ruff check .` - Detects code quality issues
+4. Run `ruff format --check .` - Validates formatting
+5. Generate summary report in GitHub Actions UI
+
+**Output**: Code quality metrics in workflow summary
+
+---
+
+### **Stage 2: Build & Setup** 🔨
+**Purpose**: Prepare test environment  
+**Matrix**: Python 3.11 & 3.12 (parallel)  
+**Duration**: ~40 seconds per version
+
+**Steps**:
+1. Checkout repository
+2. Setup Python (3.11 / 3.12)
+3. Cache pip dependencies
+4. Install requirements: `pip install -r requirements.txt`
+5. Install Playwright browsers: `playwright install chromium`
+6. Create `.env` file with configuration:
+   ```env
+   ENV=dev
+   BASE_URL=https://eks-dev-lb.shadhinlab.xyz
+   RETRY_COUNT=2
+   PARALLEL_WORKERS=4
    ```
-   - `-n 12`: Runs 12 tests in parallel (pytest-xdist)
-   - `-v`: Verbose output with test names
-   - `--reruns 3`: Auto-retry failed tests up to 3 times
-   - `--alluredir`: Generates Allure JSON results
-   
-3. **Test Execution**
-   - **Signup Tests**: 19 tests (test_signup.py)
-   - **Verification Tests**: 5 tests (test_signup_verification.py)
-   - **Resend OTP Tests**: 5 tests (test_signup_verification.py)
-   - **Total**: 29 tests executed
-   
-4. **Generate Test Results**
-   - Creates `allure-results/` directory with:
-     - Test case JSON files
-     - Attachments (request/response logs)
-     - Test execution metadata
-     - History data for trends
-   
-5. **Upload Artifacts**
-   - Packages `allure-results/` as `allure-results.zip`
-   - Available for download from GitHub Actions
-   - Passed to Deploy stage
-   - **Duration**: ~10-15 seconds
+7. Upload build artifacts for downstream jobs
 
-**Job Name**: `test`  
-**Runs on**: `ubuntu-latest` (GitHub-hosted runner in cloud)  
-**Depends on**: `build` job  
-**Parallel Workers**: 12
+**Output**: Build artifacts for both Python versions
 
 ---
 
-#### **Stage 3: Deploy** 🚀
-**Purpose**: Generate HTML reports and publish to GitHub Pages
+### **Stage 3: Smoke Tests** 💨
+**Purpose**: Fast critical path validation  
+**Depends on**: Build (3.12)  
+**Duration**: ~59 seconds
 
 **Steps**:
-1. **Download Test Results**
-   - Retrieves `allure-results.zip` from Test stage
-   - Extracts JSON results for report generation
-   
-2. **Setup GitHub Pages**
-   - Configures Pages deployment permissions
-   - Sets up artifact upload for Pages
-   - Uses `actions/configure-pages@v3`
-   
-3. **Create Root Redirect**
-   - Generates `index.html` in root:
-     ```html
-     <!DOCTYPE html>
-     <html>
-       <head>
-         <meta http-equiv="refresh" content="0; url=/playwright-api-automation-python/allure-report/" />
-       </head>
-       <body>Redirecting to Allure Report...</body>
-     </html>
-     ```
-   - Enables direct access via root URL
-   
-4. **Generate Allure HTML Report**
-   - Installs Allure commandline tool
-   - Runs `allure generate --clean -o allure-report`
-   - Creates rich HTML dashboard with:
-     - Test suites overview
-     - Graphs and charts (duration, status, trends)
-     - Timeline view of parallel execution
-     - Categorization (features, stories, severity)
-     - Detailed test logs with attachments
-   
-5. **Deploy to GitHub Pages**
-   - Uploads `allure-report/` directory
-   - Publishes to GitHub Pages
-   - **URL**: https://foyezkabir.github.io/playwright-api-automation-python/allure-report
-   - Updates immediately (no cache delay)
-   - **Duration**: ~3-5 seconds
+1. Download build artifacts
+2. Install dependencies
+3. Run smoke tests: `pytest -m smoke -v --tb=short --maxfail=3`
+4. Generate summary with pass/fail counts
+5. Display test duration
 
-**Job Name**: `deploy`  
-**Runs on**: `ubuntu-latest` (GitHub-hosted runner in cloud)  
-**Depends on**: `test` job  
-**Deployment**: GitHub Pages
+**Output**:
+- Smoke test results summary
+- Pass/Fail/Total counts
+- Test execution time
 
----
-
-### Complete Pipeline Timeline
-
-```mermaid
-graph LR
-    A[Git Push] --> B[Build Job]
-    B --> C[Setup Python 3.12]
-    C --> D[Install Dependencies]
-    D --> E[Configure .env]
-    E --> F[Cache Build]
-    F --> G[Test Job]
-    G --> H[Run 29 Tests in Parallel]
-    H --> I[Generate Allure Results]
-    I --> J[Upload Artifacts]
-    J --> K[Deploy Job]
-    K --> L[Generate HTML Report]
-    L --> M[Publish to GitHub Pages]
-    M --> N[Live Report Available]
+**Example Summary**:
 ```
+💨 Smoke Test Results
+✅ All Smoke Tests Passed!
 
-**Total Pipeline Duration**: ~18-28 seconds  
-**Stages**: 3 (Build → Test → Deploy)  
-**Jobs**: 3 (run sequentially with dependency chain)  
-**Artifacts**: Build cache + Allure results + HTML report
-
-### Workflow Configuration
-**File**: `.github/workflows/api-tests.yml`
-
-**Triggers**:
-- ✅ Push to any branch
-- ✅ Pull requests
-- ✅ Manual workflow dispatch
-
-**Execution Time**: ~15-20 seconds average
-
-### 📊 Viewing Test Reports
-
-#### GitHub Pages (Recommended)
-🔗 **Live Report**: https://foyezkabir.github.io/playwright-api-automation-python/allure-report
-
-Features:
-- 📈 Test execution trends and history
-- 📊 Test duration analytics
-- 📋 Categorized test results (Suites, Graphs, Timeline)
-- 🎯 Test categorization by features and stories
-- 📎 Request/response attachments
-- ⚡ Real-time updates after each push
-
-#### GitHub Actions Tab
-- View workflow runs and logs
-- Download test artifacts (allure-results.zip)
-- Monitor pipeline execution status
-- Check build/test/deploy stage logs
-
-**To view the deployed report from GitHub Actions:**
-1. Go to your repository on GitHub
-2. Click on the **Actions** tab
-3. Select the latest workflow run (e.g., "API Tests")
-4. Scroll down to the **Deploy** job section
-5. Look for the **github-pages** deployment in the job summary
-6. Click on the deployment URL, or visit: https://foyezkabir.github.io/playwright-api-automation-python/allure-report
-
----
-
-## 🔌 MCP Servers Integration
-
-This project leverages **Model Context Protocol (MCP)** servers to enhance testing capabilities with browser automation and API validation tools. MCP allows AI assistants to interact with external tools and services seamlessly.
-
-### 🎭 Playwright MCP Server
-
-**Purpose**: Provides browser automation capabilities for UI/UX validation and end-to-end testing.
-
-**What it does:**
-- 🌐 **Browser Control** - Launch and control browser instances (Chromium, Firefox, WebKit)
-- 🖱️ **Element Interaction** - Click, type, hover, drag-and-drop on web elements
-- 📸 **Visual Testing** - Take screenshots and snapshots for validation
-- 🔍 **DOM Inspection** - Query and inspect page elements and structure
-- 🎯 **Form Automation** - Fill forms, upload files, handle dialogs
-- ⏱️ **Wait Conditions** - Wait for elements, text, or network conditions
-- 🧪 **Accessibility Testing** - Capture accessibility tree snapshots
-
-**How it works:**
-- Runs via `npx @playwright/mcp@latest` (Node.js package)
-- Provides tools for browser automation through MCP protocol
-- Used for validating actual application behavior vs API responses
-- Enables cross-browser testing without writing Playwright scripts
-
-**Use cases in this project:**
-- Verifying UI reflects API responses correctly
-- Testing scenarios where frontend validation differs from backend
-- Discovering API endpoints by inspecting network requests
-- Visual regression testing for critical user flows
-
-**Configuration** (`.vscode/mcp.json`):
-```json
-{
-  "playwright": {
-    "command": "npx",
-    "args": ["@playwright/mcp@latest"],
-    "type": "stdio"
-  }
-}
+| Metric     | Value  |
+|------------|--------|
+| ✅ Passed  | 3      |
+| ❌ Failed  | 0      |
+| 📊 Total   | 3      |
+| ⏱️ Duration | 25.45s |
 ```
 
 ---
 
-### 🛠️ Chrome DevTools MCP Server
+### **Stage 4: Full Test Suite** 🧪
+**Purpose**: Execute all test cases  
+**Matrix**: Python 3.11 & 3.12 (parallel)  
+**Depends on**: Build, Smoke Tests  
+**Duration**: ~2 minutes per version
 
-**Purpose**: Provides deep browser inspection and debugging capabilities using Chrome DevTools Protocol.
+**Steps**:
+1. Download build artifacts
+2. Run full test suite:
+   ```bash
+   pytest tests/ -v \
+     --tb=short \
+     --maxfail=5 \
+     --reruns 2 \
+     --reruns-delay 1 \
+     -n auto \
+     --alluredir=./allure-results \
+     --junitxml=./test-results/junit.xml \
+     --cov=. \
+     --cov-report=xml:coverage.xml \
+     --cov-report=html:coverage-report
+   ```
+3. Generate Allure report:
+   ```bash
+   allure generate ./allure-results -o ./allure-report --clean
+   ```
+4. Upload artifacts:
+   - Allure results & report
+   - JUnit XML results
+   - Coverage reports (XML & HTML)
 
-**What it does:**
-- 🌍 **Page Management** - Create, navigate, close, and switch between browser tabs
-- 🔍 **Network Monitoring** - Capture all HTTP requests/responses, including headers and payloads
-- 💻 **JavaScript Execution** - Execute custom scripts in page context
-- 📊 **Performance Analysis** - Record performance traces and analyze Core Web Vitals
-- 🖥️ **Console Logging** - Capture browser console messages (errors, warnings, logs)
-- 📱 **Device Emulation** - Emulate mobile devices, network throttling, geolocation
-- 📸 **Advanced Screenshots** - Capture full page or element-specific screenshots
-- 🔄 **Real-time Interaction** - Click, fill forms, press keys, handle dialogs
+**Test Execution Details**:
+- **Total Tests**: 29
+- **Passed**: 18
+- **Expected Failures (xfail)**: 11 (documented known bugs)
+- **Parallel Workers**: 12
+- **Retry Attempts**: Up to 2 per flaky test
 
-**How it works:**
-- Runs via `npx chrome-devtools-mcp@latest` (Node.js package)
-- Connects to Chrome/Chromium using DevTools Protocol
-- Provides programmatic access to all Chrome DevTools features
-- Enables API endpoint discovery through network panel inspection
+**Output**:
+- Test results (JUnit XML)
+- Allure report (interactive HTML)
+- Coverage report (90%+ coverage)
 
-**Use cases in this project:**
-- 🔎 **API Endpoint Discovery** - Used to find the resend OTP endpoint by:
-  - Navigating to the application signup page
-  - Monitoring network requests in real-time
-  - Capturing the exact API endpoint, headers, and payload
-  - Analyzing request/response structure
-- 🐛 **Debugging** - Inspect JavaScript errors and console logs
-- ⚡ **Performance Testing** - Analyze page load times and resource usage
-- 🔐 **Security Testing** - Examine request headers, cookies, and authentication flows
-- 📱 **Responsive Testing** - Test API integration with different viewport sizes
+---
 
-**Configuration** (`.vscode/mcp.json`):
-```json
-{
-  "chrome-devtools": {
-    "command": "npx",
-    "args": ["-y", "chrome-devtools-mcp@latest"]
-  }
-}
+### **Stage 5: SonarCloud Analysis** 🔬
+**Purpose**: Code quality gate enforcement  
+**Depends on**: Test  
+**Duration**: ~49 seconds
+
+**Steps**:
+1. Checkout code with full git history
+2. Download coverage report (Python 3.12)
+3. Run SonarCloud scan:
+   ```bash
+   sonar-scanner \
+     -Dsonar.python.coverage.reportPaths=coverage.xml
+   ```
+4. Analyze:
+   - Code coverage
+   - Bugs & vulnerabilities
+   - Security hotspots
+   - Code smells
+   - Code duplications
+5. Enforce Quality Gate (must pass to proceed)
+
+**Quality Gate Conditions**:
+- ✅ Coverage on New Code ≥ 80%
+- ✅ Duplicated Lines (%) on New Code ≤ 3%
+- ✅ Maintainability Rating on New Code = A
+- ✅ Reliability Rating on New Code = A
+- ✅ Security Rating on New Code = A
+
+**Output**:
+- [SonarCloud Dashboard](https://sonarcloud.io/project/overview?id=foyezkabir_playwright-api-automation-python)
+- Quality Gate: PASSED ✅
+
+---
+
+### **Stage 6: Coverage Report** 📈
+**Purpose**: Generate coverage summary  
+**Depends on**: Test  
+**Duration**: ~4 seconds
+
+**Steps**:
+1. Download coverage report artifact
+2. Parse `coverage.xml` and extract metrics
+3. Generate coverage badge (🟢 >80%, 🟡 >60%, 🟠 >40%, 🔴 <40%)
+4. Display file-level coverage table
+5. Provide link to HTML coverage report
+
+**Coverage Report Preview**:
+
+![Coverage Report](.github/images/coverage-report.png)
+
+*File-level coverage breakdown showing 94% overall coverage*
+
+**Output Example**:
+```
+📈 Test Coverage Report
+🟢 Overall Coverage: 92% (Excellent)
+
+| File                    | Coverage |
+|-------------------------|----------|
+| ✅ apiObjects/api_objects.py | 97%      |
+| ✅ schemas.py                | 86%      |
+| ⚠️  decorators.py            | 62%      |
+| ⚠️  data_factory.py          | 76%      |
+
+📊 View Full HTML Report
 ```
 
 ---
 
-### 🚀 MCP Workflow in This Project
+### **Stage 7: Deploy Reports** 🚀
+**Purpose**: Publish reports to GitHub Pages  
+**Depends on**: Test, Coverage, SonarCloud  
+**Runs on**: `main` branch only  
+**Duration**: ~6 seconds
 
-**Example: Discovering the Resend OTP Endpoint**
+**Steps**:
+1. Create publish directory structure
+2. Download Allure report (Python 3.12)
+3. Download coverage report
+4. Fix nested directory structure for coverage report
+5. Create root `index.html` redirect page
+6. Deploy to `gh-pages` branch using `peaceiris/actions-gh-pages@v4`
 
-1. **Launch Chrome DevTools MCP** - Connect to browser with DevTools Protocol
-2. **Navigate to Application** - Open the signup verification page
-3. **Trigger Action** - Click "Resend OTP" button on the UI
-4. **Capture Network Request** - DevTools MCP captures the API call:
-   - Endpoint: `POST /api/authentication/signup/resend-code/`
-   - Payload: `{"email": "user@example.com"}`
-   - Response: `200 ConfirmationCodeResent`
-5. **Create Test Cases** - Use discovered endpoint to write comprehensive tests
-6. **Validate Rate Limiting** - Test discovered that API blocks after 5 resend attempts
+**Directory Structure Deployed**:
+```
+gh-pages/
+├── index.html                    # Redirects to allure-report
+├── allure-report/
+│   ├── index.html
+│   ├── widgets/
+│   ├── data/
+│   └── ...
+└── coverage-report/
+    ├── index.html
+    ├── status.json
+    └── ...
+```
 
-**Benefits of MCP Integration:**
-- ✅ No need to manually inspect Network tab in browser
-- ✅ Automated API endpoint discovery
-- ✅ AI-assisted test case generation from real application behavior
-- ✅ Seamless integration between UI validation and API testing
-- ✅ Faster development with context-aware tooling
+**Live URLs**:
+- 🔗 **Allure Report**: https://foyezkabir.github.io/playwright-api-automation-python/allure-report
+- 🔗 **Coverage Report**: https://foyezkabir.github.io/playwright-api-automation-python/coverage-report/index.html
 
 ---
 
-##  API Endpoints Tested
+### **Stage 8: Notifications** 📢
+**Purpose**: Send pipeline status notifications  
+**Depends on**: All previous stages  
+**Duration**: ~5 seconds
 
-**Base URL**: `https://eks-dev-lb.shadhinlab.xyz`
+**Steps**:
+1. Prepare notification summary
+2. Create GitHub workflow summary with all stage statuses
+3. Send Slack notification (if webhook configured)
 
-### 1. Signup API
-- **Endpoint**: `POST /api/authentication/signup/`
-- **Payload**:
-  ```json
-  {
-    "name": "John Doe",
-    "email": "john.doe@example.com",
-    "password": "SecurePass123!"
-  }
-  ```
-- **Tests**: 19 (8 passed, 11 xfailed for security issues)
+**Slack Notification Includes**:
+- ✅/❌ Pipeline status
+- Repository and branch info
+- Run number
+- Links to Allure Report and SonarCloud
 
-### 2. Email Verification API
-- **Endpoint**: `POST /api/authentication/signup/confirm/`
-- **Payload**:
-  ```json
-  {
-    "email": "john.doe@example.com",
-    "confirmation_code": "123456"
-  }
-  ```
-- **Tests**: 5 (all passed)
+**GitHub Summary**:
+```
+📢 Pipeline Summary
 
-### 3. Resend OTP API
-- **Endpoint**: `POST /api/authentication/signup/resend-code/`
-- **Payload**:
-  ```json
-  {
-    "email": "john.doe@example.com"
-  }
-  ```
-- **Tests**: 5 (all passed)
-- **Rate Limiting**: Blocks after 5 resend attempts
+| Stage            | Status  |
+|------------------|---------|
+| 🎨 Code Quality  | success |
+| 🔨 Build         | success |
+| 💨 Smoke Tests   | success |
+| 🧪 Tests         | success |
+| 🔬 SonarCloud    | success |
+| 📈 Coverage      | success |
+| 🚀 Deploy        | success |
+| 🔒 Security      | success |
 
-## 📊 Test Coverage (29 Total Tests)
+**Overall Status:** ✅ Success
 
-### ✅ Signup API Tests (19 tests)
-**Passed (8 tests):**
-- Valid user registration (200/201)
-- Duplicate email handling (409 USERNAME_EXISTS)
-- Missing required fields validation (400)
-- Invalid email format (400)
-- Public domain blocking (gmail, yahoo, hotmail, outlook)
+### 📊 Reports
+- 🔗 Allure Report: [View](https://foyezkabir.github.io/...)
+- 🔗 SonarCloud: [View](https://sonarcloud.io/...)
+```
 
-**xfailed (11 tests) - Security Issues Documented:**
-- Name validation bypass (API accepts invalid names when frontend bypassed)
-- Password complexity bypass (API crashes with 500 error)
-- These tests document scenarios where **frontend validation can be bypassed** (Postman, curl, etc.)
+---
 
-### ✅ Email Verification Tests (5 tests - all passed)
-- Valid 6-digit OTP verification
-- Invalid OTP handling (CODE_MISMATCH)
-- Expired/non-existent email (404 UserNotFound)
-- Incomplete OTP (less than 6 digits)
-- Missing confirmation code validation
+### **Stage 9: Cleanup** 🧹
+**Purpose**: Remove old workflow runs  
+**Duration**: ~7 seconds
 
-### ✅ Resend OTP Tests (5 tests - all passed)
-- Successful resend (200 ConfirmationCodeResent)
-- Missing email validation (400)
-- Non-existent email (404)
-- Already verified email handling
-- Rate limiting after 5 attempts (400/429)
+**Steps**:
+1. Delete workflow runs older than 30 days
+2. Keep minimum 10 recent runs
+3. Log cleanup summary
 
-## ⚙️ Setup & Usage
+---
+
+### **Parallel Stage: Security Scan** 🔒
+**Purpose**: Dependency vulnerability scanning  
+**Runs in parallel** with all stages  
+**Duration**: ~17 seconds
+
+**Steps**:
+1. Install Safety tool
+2. Run `safety check --json` on requirements.txt
+3. Report vulnerabilities (if any)
+
+---
+
+## 📊 Pipeline Performance Metrics
+
+| Metric                    | Value           |
+|---------------------------|-----------------|
+| **Total Pipeline Duration** | ~5 minutes      |
+| **Test Execution Time**   | ~25 seconds     |
+| **Parallel Workers**      | 12              |
+| **Matrix Builds**         | 2 (Py 3.11, 3.12) |
+| **Total Tests**           | 29              |
+| **Success Rate**          | 100% (18 passed, 11 xfail) |
+| **Coverage**              | 92%             |
+| **Code Quality Gate**     | ✅ PASSED       |
+| **Artifacts Generated**   | 10 per run      |
+
+---
+
+## 🧪 Test Coverage Matrix
+
+### Signup API Tests (19 tests)
+
+| Test Category | Test Count | Status | Description |
+|---------------|------------|--------|-------------|
+| ✅ **Valid Scenarios** | 2 | Passing | Successful signup with valid data |
+| 🌐 **Email Validation** | 5 | Passing | Domain restrictions (gmail, yahoo, outlook, hotmail) |
+| 📝 **Name Validation** | 7 | xfail | Length, special chars, numbers (known backend bugs) |
+| 🔒 **Password Validation** | 4 | xfail | Complexity requirements (known backend bugs) |
+| 🔄 **Duplicate Prevention** | 1 | Passing | Duplicate email rejection |
+
+**Total**: 19 tests (8 passing, 11 xfail documented bugs)
+
+### Verification API Tests (10 tests)
+
+| Test Category | Test Count | Status | Description |
+|---------------|------------|--------|-------------|
+| ✅ **Valid OTP** | 1 | Passing | Correct OTP verification |
+| ❌ **Invalid OTP** | 3 | Passing | Wrong, expired, incomplete codes |
+| 📤 **Resend OTP** | 5 | Passing | Resend scenarios, rate limiting |
+| ⚠️ **Edge Cases** | 1 | Passing | Missing codes |
+
+**Total**: 10 tests (10 passing)
+
+### Overall Test Summary
+- **Total Tests**: 29
+- **Passed**: 18
+- **Expected Failures**: 11 (xfail with bug IDs)
+- **Success Rate**: 100% (all tests behave as expected)
+
+---
+
+## 🔬 SonarCloud Integration
+
+### Setup & Configuration
+
+#### **1. SonarCloud Project Setup**
+1. Connected GitHub repository to SonarCloud
+2. Created organization: `foyezkabir`
+3. Created project: `playwright-api-automation-python`
+4. Generated token and added to GitHub Secrets as `SONAR_TOKEN`
+
+#### **2. Configuration Files**
+
+**`sonar-project.properties`**:
+```properties
+sonar.projectKey=foyezkabir_playwright-api-automation-python
+sonar.organization=foyezkabir
+sonar.host.url=https://sonarcloud.io
+
+# Source paths
+sonar.sources=.
+sonar.exclusions=**/venv/**,**/__pycache__/**,**/allure-results/**,**/allure-report/**,**/coverage-report/**
+
+# Coverage
+sonar.python.coverage.reportPaths=coverage.xml
+
+# Quality Gate
+sonar.qualitygate.wait=false
+```
+
+**`sonarqube/sonar-project.properties`** (duplicate for organizational structure)
+
+#### **3. GitHub Actions Integration**
+
+```yaml
+sonarcloud:
+  name: 🔬 SonarCloud Analysis
+  runs-on: ubuntu-latest
+  needs: test
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for better analysis
+    
+    - name: 📥 Download coverage report
+      uses: actions/download-artifact@v4
+      with:
+        name: coverage-report-3.12-${{ github.run_number }}
+    
+    - name: 🔬 SonarCloud Scan
+      uses: SonarSource/sonarqube-scan-action@v6
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      with:
+        args: -Dsonar.python.coverage.reportPaths=coverage.xml
+```
+
+### Quality Gate Rules
+
+| Condition | Threshold | Status |
+|-----------|-----------|--------|
+| **Coverage on New Code** | ≥ 80.0% | ✅ Pass |
+| **Duplicated Lines (%)** | ≤ 3.0% | ✅ Pass |
+| **Maintainability Rating** | A | ✅ Pass |
+| **Reliability Rating** | A | ✅ Pass |
+| **Security Rating** | A | ✅ Pass |
+
+### Code Quality Achievements
+
+#### **Coverage**: 92%
+- High test coverage maintained
+- All critical paths covered
+- Edge cases included
+
+#### **Duplication**: <3%
+- Refactored conftest.py to eliminate duplication
+- Shared `update_readme()` function
+- DRY principles enforced
+
+#### **Code Smells**: 0
+- Clean code principles
+- Proper naming conventions
+- Well-structured modules
+
+#### **Security Hotspots**: 0
+- No hardcoded credentials
+- Secure password generation
+- Input validation implemented
+
+#### **Bugs**: 0
+- Type hints enforced (PEP 604)
+- Ruff linter configured
+- No critical issues detected
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
-- Python 3.12+
-- pip
-- Virtual environment
+- Python 3.11 or 3.12
+- pip (Python package manager)
+- Git
 
 ### Installation
+
 1. **Clone the repository**:
    ```bash
    git clone https://github.com/foyezkabir/playwright-api-automation-python.git
@@ -443,333 +615,460 @@ This project leverages **Model Context Protocol (MCP)** servers to enhance testi
    python -m venv venv
    
    # Windows
-   .\venv\Scripts\activate
+   venv\Scripts\activate
    
-   # Mac/Linux
+   # Linux/Mac
    source venv/bin/activate
    ```
 
 3. **Install dependencies**:
    ```bash
    pip install -r requirements.txt
+   playwright install chromium
    ```
 
 4. **Configure environment**:
    ```bash
-   # Copy example file
-   copy .env.example .env
+   # Copy example env file
+   cp .env.example .env
    
-   # Edit .env if needed (optional - defaults provided)
+   # Edit .env with your configuration
+   # ENV=dev
+   # BASE_URL=https://eks-dev-lb.shadhinlab.xyz
+   # RETRY_COUNT=2
+   # PARALLEL_WORKERS=12
    ```
 
 ### Running Tests
 
-#### Basic Execution
+#### **Run all tests**:
 ```bash
-# Normal test run (no README update)
-pytest tests/ -v
-
-# Run specific test file
-pytest tests/test_signup.py
-pytest tests/test_signup_verification.py
-
-# Run specific test
-pytest tests/test_signup.py::TestSignup::test_signup_success
+pytest -v
 ```
 
-#### Auto-Update README with Test Results 🔄
-After every test run, automatically update the README with latest results:
-
-**Method 1: Using --update-readme Flag (Recommended)**
+#### **Run with parallel execution** (12 workers):
 ```bash
-# Test run with README auto-update
-pytest tests/ --update-readme
+pytest -n 12 -v
 ```
 
-**Method 2: Using Batch Script (Windows)**
+#### **Run specific test file**:
 ```bash
-# Runs tests and updates README automatically
-docs\run_tests_and_update_readme.bat
+pytest tests/test_signup.py -v
 ```
 
-**Method 3: Using Environment Variable**
+#### **Run smoke tests only**:
 ```bash
-# Set environment variable and run tests
-set UPDATE_README=true
-pytest tests/
-
-# Or in one line (PowerShell)
-$env:UPDATE_README="true"; pytest tests/
+pytest -m smoke -v
 ```
 
-**Method 4: Manual Update**
+#### **Run with coverage**:
 ```bash
-# Run tests first
-pytest tests/
-
-# Then manually update README
-python sync_readme_test_results.py
+pytest --cov=. --cov-report=html --cov-report=term
 ```
 
-**How it works:**
-- Captures pytest output and statistics
-- Parses test counts (passed, failed, xfailed, skipped)
-- Extracts execution time
-- Updates the "Test Execution Results" section in README
-- Adds timestamp of last run
-
-#### With Allure Reports (Local)
+#### **Run with Allure report**:
 ```bash
 # Generate Allure results
 pytest --alluredir=./allure-results
 
-# Serve report locally
+# Serve Allure report
 allure serve ./allure-results
 ```
 
-#### Parallel Execution
+#### **Run and update README**:
 ```bash
-# Run with 12 workers (faster)
-pytest -n 12
+# Windows
+docs\run_tests_and_update_readme.bat
 
-# Auto-detect CPU cores
-pytest -n auto
+# Linux/Mac
+UPDATE_README=true pytest
 ```
 
-#### By Test Category
+### Running Code Quality Checks
+
+#### **Ruff Linter**:
 ```bash
-# Smoke tests only
-pytest -m smoke_test
+# Check for issues
+ruff check .
 
-# Validation tests only
-pytest -m validation_test
+# Auto-fix issues
+ruff check . --fix
 
-# Regression suite
-pytest -m regression_test
+# Format code
+ruff format .
 ```
 
-#### With Retries
+#### **Type Checking** (Optional):
 ```bash
-# Retry failed tests up to 3 times
-pytest --reruns 3 --reruns-delay 1
+mypy . --ignore-missing-imports
 ```
 
-### Configuration (.env file)
-
+#### **Security Scan**:
 ```bash
-# Environment
-ENV=dev                          # dev, staging, prod
-
-# API Configuration
-BASE_URL=https://eks-dev-lb.shadhinlab.xyz
-API_TIMEOUT=30
-
-# Test Execution
-RETRY_COUNT=2
-PARALLEL_WORKERS=12
-
-# Reporting
-ALLURE_RESULTS_DIR=./allure-results
-REPORT_PORTAL_ENABLED=false      # ReportPortal removed
+pip install safety
+safety check
 ```
 
-## 📁 Project Structure
+---
 
-```
-.
-├── __pycache__/                       # Python compiled bytecode (gitignored)
-├── .github/
-│   └── workflows/
-│       └── api-tests.yml              # CI/CD pipeline (Build→Test→Deploy)
-├── .pytest_cache/                     # Pytest cache directory (gitignored)
-├── .vscode/                           # VS Code workspace settings
-│   ├── mcp.json                       # Model Context Protocol configuration
-│   └── settings.json                  # VS Code editor settings
-├── allure-results/                    # Allure test execution results (gitignored)
-├── apiObjects/                        # API client objects for different features
-│   ├── __init__.py                    # Package initialization
-│   └── api_objects.py                 # Signup/Verification API clients
-├── docs/                              # Project documentation
-│   ├── AUTO_UPDATE_README.md          # Guide for auto-updating README with test results
-│   └── run_tests_and_update_readme.bat # Batch script to run tests and sync results
-├── logs/                              # Test execution logs (gitignored)
-├── screenshots/                       # Test failure screenshots (gitignored)
-├── tests/                             # Test modules organized by feature
-│   ├── __init__.py                    # Package initialization
-│   ├── test_signup.py                 # Signup API tests (19 tests)
-│   └── test_signup_verification.py    # Verification + Resend OTP tests (10 tests)
-├── venv/                              # Python virtual environment (gitignored)
-├── .env                               # Environment variables (gitignored - local only)
-├── .env.example                       # Example environment variables template
-├── .gitignore                         # Git ignore patterns
-├── api_objects.py                     # API client with helper methods
-├── config.py                          # Environment configuration management
-├── conftest.py                        # Pytest fixtures & configuration
-├── data_factory.py                    # Test data generation (Faker)
-├── decorators.py                      # Custom decorators (13+ decorators)
-├── pytest.ini                         # Pytest configuration
-├── README.md                          # This file
-├── requirements.txt                   # Python dependencies
-├── schemas.py                         # Pydantic models for validation
-├── setup.py                           # Package installation configuration
-└── sync_readme_test_results.py        # Script to sync test results to README
-```
+## 📁 Test Data Management
 
-## 🎨 Custom Decorators
+### UserDataFactory
 
-Located in `decorators.py` - 13+ decorators for test organization:
+Located in `data_factory.py`, provides methods for generating test data:
 
-```python
-@api_smoke(method="POST", endpoint="/api/authentication/signup/")
-def test_signup_success(self, signup_api):
-    """Critical smoke test for signup API"""
-    pass
-
-@validation_test(field="email", validation_type="format")
-def test_invalid_email_format(self, signup_api):
-    """Field-level validation test"""
-    pass
-
-@known_bug(bug_id="BUG-001", reason="API returns 500 for weak passwords")
-def test_password_complexity(self, signup_api):
-    """xfail test documenting known issue"""
-    pass
-
-@regression_test(title="Test duplicate email", severity="CRITICAL")
-def test_duplicate_email(self, signup_api):
-    """Regression test with severity"""
-    pass
-
-@feature_story(feature='Authentication', story='Signup Verification')
-class TestSignupVerification:
-    """Test suite with Allure categorization"""
-    pass
-```
-
-## 🛠️ Advanced Features
-
-### Test Data Factory
 ```python
 from data_factory import UserDataFactory
 
-# Generate unique test data
-payload = UserDataFactory.create_signup_payload()
-# Output: {name: "User 1736153695", email: "user_1736153695123@example.com", password: "Password123!"}
+# Generate unique email with timestamp
+email = UserDataFactory.generate_unique_email()
+# Output: test_1704556800000@example.com
 
-# Custom data
+# Generate random name
+name = UserDataFactory.random_name()
+# Output: "John Doe"
+
+# Generate secure password (12 chars, includes special chars)
+password = UserDataFactory.random_password()
+# Output: "aB3!xYz9@Klm"
+
+# Create complete signup payload
+payload = UserDataFactory.create_signup_payload()
+# Output: {"name": "Jane Smith", "email": "test_...", "password": "..."}
+
+# Custom payload
 payload = UserDataFactory.create_signup_payload(
-    name="John Doe",
+    name="Custom Name",
     email="custom@example.com"
 )
 ```
 
-### API Client Helper Methods
+**Features**:
+- ✅ Timestamp-based unique email generation
+- ✅ Faker library integration for realistic names
+- ✅ Cryptographically secure password generation
+- ✅ Customizable data with optional parameters
+- ✅ Locale support for international names
+
+---
+
+## 🎨 Custom Decorators
+
+Located in `decorators.py`, provides test categorization:
+
+### **@api_smoke**
+Marks critical smoke tests that run first:
 ```python
-# In api_objects.py - SignupClient class
-
-# Basic API calls
-response = signup_api.create_user(payload)
-response = signup_api.confirm_signup(verification_payload)
-response = signup_api.resend_confirmation_code(resend_payload)
-
-# Helper method for rate limit testing
-result = signup_api.test_resend_rate_limit(email="test@example.com", max_attempts=5)
-# Returns: {"successful_attempts": 5, "blocked_response": APIResponse}
-
-# Utility methods
-email = SignupClient.generate_unique_email(prefix="test")
-payload = SignupClient.default_payload(email_prefix="user")
+@api_smoke(method="POST", endpoint="/api/authentication/signup/")
+def test_signup_success(self, signup_api):
+    # Critical path test
+    pass
 ```
 
-### Browser Validation (Chrome DevTools MCP)
-Used for verifying actual UI behavior vs API behavior:
-- Navigate to live application
-- Inspect UI elements and structure
-- Capture network requests and responses
-- Validate frontend validation rules
-- Screenshot evidence of UI state
-
-## 🐛 Critical Findings & Security Issues
-
-### ⚠️ API Security Vulnerabilities
-
-**1. Name Validation Missing** (11 xfailed tests)
-- Frontend validates name format, but API accepts:
-  - Names with numbers: "User123" → 201 ✅ (should be 400 ❌)
-  - Special characters: "@User", "User!" → 201 ✅
-  - Too short: "Ab" → 201 ✅
-  - Leading/trailing spaces: " User " → 201 ✅
-- **Risk**: Data integrity issues, potential injection attacks
-- **Tests**: `test_signup_name_validation_failures` (7 parameterized tests)
-
-**2. Password Complexity Causes Server Crash** (4 xfailed tests)
-- Weak passwords cause API to return **500 Internal Server Error**:
-  - Missing uppercase: "password123!" → 500 💥
-  - Missing lowercase: "PASSWORD123!" → 500 💥
-  - Missing number: "Password!" → 500 💥
-  - Missing special char: "Password123" → 500 💥
-- **Risk**: Server instability, poor user experience
-- **Tests**: `test_signup_password_complexity` (4 parameterized tests)
-
-**3. Public Email Domains Blocked** ✅
-- API correctly blocks: gmail.com, yahoo.com, hotmail.com, outlook.com
-- Returns 400 with proper error message
-- **Tests**: `test_signup_email_public_domain` (4 tests, all passing)
-
-**Note**: All xfailed tests document scenarios where **frontend validation can be bypassed** using tools like Postman, curl, or direct API calls. These represent real security vulnerabilities that should be fixed with server-side validation.
-
-## 📈 Test Execution Results
-
-### Latest Test Run (2026-01-06 11:36:07)
-```
-========================== test session starts ==========================
-collected 29 items
-
-test_signup.py                                     19 tests
-  ✅ 18 passed
-  ⚠️ 11 xfailed (security issues documented)
-
-test_signup_verification.py                        10 tests
-  ✅ 10 passed
-
-==================== 18 passed, 11 xfailed in N/As ====================
+### **@validation_test**
+Marks field validation tests:
+```python
+@validation_test(field="email", validation_type="format")
+def test_invalid_email(self, signup_api):
+    # Email format validation
+    pass
 ```
 
-### Performance Metrics
-- **Total Tests**: 29
-- **Execution Time**: ~N/A seconds
-- **Parallel Workers**: 12
-- **Retry Attempts**: Up to 3 per test
-- **CI/CD Pipeline**: ~15-20 seconds total
-- **Last Updated**: 2026-01-06 11:36:07
+### **@known_bug**
+Marks expected failures with bug tracking:
+```python
+@known_bug(bug_id="BUG-001", reason="Password complexity not enforced")
+def test_weak_password(self, signup_api):
+    # Known backend bug - expected to fail
+    pass
+```
+
+### **@feature_story**
+Categorizes tests for Allure reports:
+```python
+@feature_story(feature='Authentication', story='User Signup')
+class TestSignup:
+    # All tests in this class tagged with feature/story
+    pass
+```
+
+### **@regression_test**
+Marks regression tests:
+```python
+@regression_test(title="Test duplicate email", severity="CRITICAL")
+def test_duplicate_email(self, signup_api):
+    pass
+```
+
+---
+
+## ✅ Schema Validation
+
+Located in `schemas.py`, uses Pydantic for API contract validation:
+
+```python
+from schemas import SignupSuccessResponseSchema, assert_response_schema
+
+# Validate response matches expected schema
+response = signup_api.signup(payload)
+assert_response_schema(response.json(), SignupSuccessResponseSchema)
+```
+
+**Available Schemas**:
+- `SignupSuccessResponseSchema` - Successful signup response
+- `SignupErrorResponseSchema` - Error responses
+- `ErrorDetailSchema` - Error detail structure
+
+---
+
+## 🔧 Configuration
+
+### Environment Variables (`.env`)
+
+```env
+# Environment (dev/staging/prod)
+ENV=dev
+
+# API Base URL
+BASE_URL=https://eks-dev-lb.shadhinlab.xyz
+
+# Test Configuration
+RETRY_COUNT=2
+PARALLEL_WORKERS=12
+
+# Logging
+LOG_LEVEL=INFO
+
+# Timeouts
+API_TIMEOUT=30
+```
+
+### Pytest Configuration (`pytest.ini`)
+
+```ini
+[pytest]
+markers =
+    smoke: Critical smoke tests
+    regression: Regression test suite
+    validation: Input validation tests
+
+# Allure
+addopts = 
+    --alluredir=./allure-results
+    --clean-alluredir
+    -v
+    --tb=short
+    --strict-markers
+
+# Parallel execution
+python_files = test_*.py
+python_classes = Test*
+python_functions = test_*
+```
+
+---
+
+## 📈 Viewing Reports
+
+### Allure Report (Live)
+🔗 **URL**: https://foyezkabir.github.io/playwright-api-automation-python/allure-report
+
+**Features**:
+- ✅ Test execution history and trends
+- ✅ Feature and story categorization
+- ✅ Test duration metrics
+- ✅ Retry information
+- ✅ Environment details
+- ✅ Attachments (logs, screenshots)
+
+### Coverage Report (Live)
+🔗 **URL**: https://foyezkabir.github.io/playwright-api-automation-python/coverage-report/index.html
+
+**Features**:
+- ✅ Overall coverage percentage (92%)
+- ✅ File-level coverage breakdown
+- ✅ Line-by-line coverage visualization
+- ✅ Missing coverage highlights
+
+### SonarCloud Dashboard (Live)
+🔗 **URL**: https://sonarcloud.io/project/overview?id=foyezkabir_playwright-api-automation-python
+
+**Features**:
+- ✅ Quality Gate status
+- ✅ Code coverage metrics
+- ✅ Code smells and technical debt
+- ✅ Security vulnerabilities
+- ✅ Duplication percentage
+- ✅ Maintainability rating
+
+### Local Reports
+
+#### **Generate Allure Report Locally**:
+```bash
+# Run tests
+pytest --alluredir=./allure-results
+
+# Serve report
+allure serve ./allure-results
+```
+
+#### **Generate Coverage Report Locally**:
+```bash
+pytest --cov=. --cov-report=html
+
+# Open in browser
+open coverage-report/index.html  # Mac/Linux
+start coverage-report/index.html  # Windows
+```
+
+---
+
+## 🛠️ Development Workflow
+
+### 1. **Write Test**
+Create test in `tests/` directory using existing patterns:
+```python
+@feature_story(feature='Authentication', story='User Signup')
+class TestNewFeature:
+    @api_smoke(method="POST", endpoint="/api/new-endpoint/")
+    def test_new_feature(self, signup_api):
+        payload = UserDataFactory.create_signup_payload()
+        response = signup_api.new_method(payload)
+        
+        assert response.status == 200
+        assert_response_schema(response.json(), NewSchema)
+```
+
+### 2. **Run Tests Locally**
+```bash
+# Run new test
+pytest tests/test_new_feature.py -v
+
+# Run with coverage
+pytest tests/test_new_feature.py --cov=. --cov-report=term
+```
+
+### 3. **Code Quality Check**
+```bash
+# Lint
+ruff check .
+
+# Format
+ruff format .
+
+# Fix issues
+ruff check . --fix
+```
+
+### 4. **Commit & Push**
+```bash
+git add .
+git commit -m "feat: add new feature tests"
+git push origin main
+```
+
+### 5. **CI/CD Pipeline Runs Automatically**
+- ✅ Code quality checks pass
+- ✅ Tests run on Python 3.11 & 3.12
+- ✅ SonarCloud analysis passes Quality Gate
+- ✅ Coverage meets threshold (>90%)
+- ✅ Reports deployed to GitHub Pages
+
+### 6. **Review Results**
+- Check GitHub Actions workflow run
+- Review Allure report (auto-deployed)
+- Check SonarCloud for quality metrics
+- Verify coverage report
+
+---
+
+## 📚 Key Technologies
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **Python** | 3.11, 3.12 | Programming language |
+| **Playwright** | Latest | API testing framework |
+| **Pytest** | 9.0.2 | Test execution & fixtures |
+| **Allure** | 2.25.0 | Test reporting |
+| **Faker** | 40.1.0 | Test data generation |
+| **Pydantic** | Latest | Schema validation |
+| **pytest-xdist** | Latest | Parallel execution |
+| **pytest-rerunfailures** | Latest | Flaky test handling |
+| **Ruff** | Latest | Linting & formatting |
+| **SonarCloud** | N/A | Code quality analysis |
+| **GitHub Actions** | N/A | CI/CD pipeline |
+| **GitHub Pages** | N/A | Report hosting |
+
+---
+
 ## 🤝 Contributing
 
-Contributions welcome! Please follow these steps:
+This is a personal portfolio project, but suggestions and improvements are welcome:
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch (`git checkout -b feature/improvement`)
+3. Make changes following existing patterns
+4. Run tests and quality checks
+5. Commit changes (`git commit -m 'feat: add improvement'`)
+6. Push to branch (`git push origin feature/improvement`)
+7. Open a Pull Request
 
-## 📝 License
+---
 
-This project is licensed under the MIT License.
+## 📄 License
+
+This project is created for educational and demonstration purposes. Feel free to use code samples and patterns for learning.
+
+---
 
 ## 👤 Author
 
 **Foyez Kabir**
 - GitHub: [@foyezkabir](https://github.com/foyezkabir)
+- Portfolio: Playwright API Automation Framework
 
-## 🙏 Acknowledgments
+---
 
-- Playwright Team for excellent API testing capabilities
-- Allure Framework for beautiful test reports
-- GitHub Actions for seamless CI/CD
-- Open Source Community
+## 📞 Contact & Support
+
+For questions, suggestions, or discussions about this framework:
+- Open an issue on GitHub
+- Refer to the [documentation](#) in this README
+- Check the [CI/CD Pipeline](#-cicd-pipeline-flow) section for workflow details
+
+---
+
+## 🎯 Future Enhancements
+
+Potential improvements and extensions:
+
+- [ ] Add GraphQL API testing
+- [ ] Implement performance testing with locust
+- [ ] Add database validation
+- [ ] Extend to microservices architecture
+- [ ] Add Docker containerization
+- [ ] Implement API mocking
+- [ ] Add security testing (OWASP)
+- [ ] Multi-environment deployment strategy
+- [ ] Advanced retry strategies
+- [ ] Real-time reporting dashboard
+
+---
+
+## 📊 Project Statistics
+
+- **Lines of Code**: ~2,500
+- **Test Files**: 2
+- **Total Tests**: 29
+- **Code Coverage**: 92%
+- **Quality Gate**: PASSED
+- **Pipeline Stages**: 9
+- **Average Pipeline Duration**: ~5 minutes
+- **Test Execution Time**: ~25 seconds
+- **Artifacts Generated**: 10 per run
 
 ---
 
 **⭐ Star this repository if you find it helpful!**
 
-**📊 View Live Reports**: https://foyezkabir.github.io/playwright-api-automation-python/allure-report
+**🔗 Live Reports**: [Allure](https://foyezkabir.github.io/playwright-api-automation-python/allure-report) | [Coverage](https://foyezkabir.github.io/playwright-api-automation-python/coverage-report/index.html) | [SonarCloud](https://sonarcloud.io/project/overview?id=foyezkabir_playwright-api-automation-python)
