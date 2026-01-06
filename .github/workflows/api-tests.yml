@@ -521,7 +521,25 @@ jobs:
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
         with:
           name: coverage-report-3.12-${{ github.run_number }}
-          path: ./publish/coverage-report
+          path: ./coverage-temp
+        continue-on-error: true
+      
+      - name: 📁 Fix coverage report nested structure
+        run: |
+          # The artifact contains: coverage-report/ and coverage.xml
+          # We need to extract just the HTML report directory
+          if [ -d "./coverage-temp/coverage-report" ]; then
+            # Move the nested coverage-report directory to the correct location
+            mv ./coverage-temp/coverage-report ./publish/coverage-report
+            echo "✅ Moved coverage report from nested structure"
+          elif [ -d "./coverage-temp" ]; then
+            # Fallback: move everything
+            mkdir -p ./publish/coverage-report
+            mv ./coverage-temp/* ./publish/coverage-report/ 2>/dev/null || true
+            echo "⚠️ Moved all coverage files"
+          else
+            echo "❌ No coverage report found"
+          fi
         continue-on-error: true
       
       - name: 🏠 Create root redirect page
