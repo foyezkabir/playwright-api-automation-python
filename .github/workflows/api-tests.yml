@@ -27,8 +27,71 @@ permissions:
   pages: write
   id-token: write
 
+# Global environment variables
+env:
+  TIMESTAMP: ${{ github.run_id }}
+
 jobs:
-  # Step 1: Build - Install dependencies and setup environment
+  # ═══════════════════════════════════════════════════════════════════════════
+  # STAGE 1: CODE QUALITY (runs in parallel)
+  # ═══════════════════════════════════════════════════════════════════════════
+  
+  code-quality:
+    name: 🎨 Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: 📦 Install Ruff
+        run: pip install ruff
+      
+      - name: 🔍 Run Ruff Linter
+        run: |
+          echo "## 🎨 Code Quality Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          ruff check . --output-format=github || true
+          ruff check . --statistics >> $GITHUB_STEP_SUMMARY 2>&1 || true
+      
+      - name: 🎯 Run Ruff Formatter Check
+        run: |
+          ruff format --check . || echo "⚠️ Some files need formatting" >> $GITHUB_STEP_SUMMARY
+
+  type-check:
+    name: 📊 Type Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: 📦 Install dependencies
+        run: |
+          pip install mypy types-requests
+          pip install -r requirements.txt
+      
+      - name: 🔍 Run MyPy Type Check
+        run: |
+          echo "## 📊 Type Check Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          mypy . --ignore-missing-imports --no-error-summary 2>&1 | head -50 >> $GITHUB_STEP_SUMMARY || true
+        continue-on-error: true
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # STAGE 2: BUILD
+  # ═══════════════════════════════════════════════════════════════════════════
+  
   build:
     name: 🔨 Build & Setup
     runs-on: ubuntu-latest
@@ -38,22 +101,22 @@ jobs:
       fail-fast: false
     
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
       
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: 🐍 Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
       
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           playwright install --with-deps chromium
       
-      - name: Cache dependencies
+      - name: 💾 Cache dependencies
         uses: actions/cache@v4
         with:
           path: |
@@ -63,7 +126,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-playwright-
       
-      - name: Create .env file
+      - name: 📝 Create .env file
         run: |
           cat > .env << EOF
           ENV=${{ github.event.inputs.environment || 'dev' }}
@@ -73,7 +136,7 @@ jobs:
           REPORT_PORTAL_ENABLED=false
           EOF
       
-      - name: Upload build artifacts
+      - name: 📤 Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.python-version }}
@@ -82,41 +145,81 @@ jobs:
             requirements.txt
           retention-days: 1
 
-  # Step 2: Test - Run API tests
+  # ═══════════════════════════════════════════════════════════════════════════
+  # STAGE 3: SMOKE TESTS (Fast feedback)
+  # ═══════════════════════════════════════════════════════════════════════════
+  
+  smoke-tests:
+    name: 💨 Smoke Tests
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      
+      - name: 📥 Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-3.12
+      
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+      
+      - name: 💨 Run Smoke Tests
+        run: |
+          echo "## 💨 Smoke Test Results" >> $GITHUB_STEP_SUMMARY
+          pytest tests/ -v -m "smoke" --tb=short --maxfail=3 2>&1 | tail -20 >> $GITHUB_STEP_SUMMARY || true
+          pytest tests/ -v -m "smoke" --tb=short --maxfail=3
+        continue-on-error: true
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # STAGE 4: FULL TEST SUITE
+  # ═══════════════════════════════════════════════════════════════════════════
+  
   test:
     name: 🧪 Run Tests
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, smoke-tests]
     strategy:
       matrix:
         python-version: ['3.11', '3.12']
       fail-fast: false
     
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
       
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: 🐍 Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
       
-      - name: Download build artifacts
+      - name: 📥 Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: build-${{ matrix.python-version }}
       
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           playwright install --with-deps chromium
       
-      - name: Run tests with pytest
+      - name: 🧪 Run tests with pytest
         id: pytest
         run: |
-          pytest -v \
+          pytest tests/ -v \
             --tb=short \
             --maxfail=5 \
             --reruns 2 \
@@ -124,10 +227,13 @@ jobs:
             -n auto \
             --alluredir=./allure-results \
             --clean-alluredir \
-            --junitxml=./test-results/junit.xml
+            --junitxml=./test-results/junit.xml \
+            --cov=. \
+            --cov-report=xml:coverage.xml \
+            --cov-report=html:coverage-report
         continue-on-error: true
       
-      - name: Generate Allure Report
+      - name: 📊 Generate Allure Report
         if: always()
         run: |
           # Install Allure CLI
@@ -139,62 +245,156 @@ jobs:
           # Generate report
           allure generate ./allure-results -o ./allure-report --clean
       
-      - name: Upload Allure Results
+      - name: � Generate Artifact Metadata
+        if: always()
+        run: |
+          CREATED_AT=$(TZ='Asia/Dhaka' date '+%d/%m/%Y %H:%M:%S')
+          echo "Created: $CREATED_AT" > ./allure-results/artifact-info.txt
+          echo "Created: $CREATED_AT" > ./allure-report/artifact-info.txt
+          echo "Created: $CREATED_AT" > ./test-results/artifact-info.txt 2>/dev/null || mkdir -p ./test-results && echo "Created: $CREATED_AT" > ./test-results/artifact-info.txt
+          echo "ARTIFACT_TIMESTAMP=$CREATED_AT" >> $GITHUB_ENV
+          echo "📅 Artifact Created: $CREATED_AT" >> $GITHUB_STEP_SUMMARY
+      
+      - name: 📤 Upload Allure Results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results-${{ matrix.python-version }}
+          name: allure-results-${{ matrix.python-version }}-${{ github.run_number }}
           path: ./allure-results
           retention-days: 30
       
-      - name: Upload Allure Report
+      - name: 📤 Upload Allure Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-report-${{ matrix.python-version }}
+          name: allure-report-${{ matrix.python-version }}-${{ github.run_number }}
           path: ./allure-report
           retention-days: 30
       
-      - name: Upload Test Results
+      - name: 📤 Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ matrix.python-version }}
+          name: test-results-${{ matrix.python-version }}-${{ github.run_number }}
           path: ./test-results
           retention-days: 30
       
-      - name: Publish Test Results
+      - name: 📤 Upload Coverage Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-${{ matrix.python-version }}-${{ github.run_number }}
+          path: |
+            coverage.xml
+            coverage-report/
+          retention-days: 30
+      
+      - name: 📈 Publish Test Results
         if: always()
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: ./test-results/junit.xml
           check_name: Test Results (Python ${{ matrix.python-version }})
       
-      - name: Fail job if tests failed
+      - name: ❌ Fail job if tests failed
         if: steps.pytest.outcome == 'failure'
         run: exit 1
 
-  # Step 3: Deploy - Publish Allure reports to GitHub Pages
+  # ═══════════════════════════════════════════════════════════════════════════
+  # STAGE 5: SONARCLOUD CODE ANALYSIS
+  # ═══════════════════════════════════════════════════════════════════════════
+  
+  sonarcloud:
+    name: 🔬 SonarCloud Analysis
+    runs-on: ubuntu-latest
+    needs: test
+    if: always()
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better analysis
+      
+      - name: 📥 Download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report-3.12-${{ github.run_number }}
+          path: .
+        continue-on-error: true
+      
+      - name: 🔬 SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.python.coverage.reportPaths=coverage.xml
+      
+      - name: 📋 SonarCloud Summary
+        run: |
+          echo "## 🔬 SonarCloud Analysis Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 **View Results:** [SonarCloud Dashboard](https://sonarcloud.io/project/overview?id=foyezkabir_playwright-api-automation-python)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Metrics Analyzed:" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 Code Coverage" >> $GITHUB_STEP_SUMMARY
+          echo "- 🐛 Bugs & Vulnerabilities" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔒 Security Hotspots" >> $GITHUB_STEP_SUMMARY
+          echo "- 💨 Code Smells" >> $GITHUB_STEP_SUMMARY
+          echo "- 📈 Duplications" >> $GITHUB_STEP_SUMMARY
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # STAGE 6: COVERAGE REPORT
+  # ═══════════════════════════════════════════════════════════════════════════
+  
+  coverage:
+    name: 📈 Coverage Report
+    runs-on: ubuntu-latest
+    needs: test
+    if: always()
+    
+    steps:
+      - name: 📥 Download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report-3.12-${{ github.run_number }}
+          path: ./coverage
+      
+      - name: 📊 Generate Coverage Summary
+        run: |
+          echo "## 📈 Test Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f coverage/coverage.xml ]; then
+            echo "Coverage report generated successfully!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Coverage report not found" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # STAGE 7: DEPLOY REPORTS
+  # ═══════════════════════════════════════════════════════════════════════════
   deploy:
     name: 🚀 Deploy Reports
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test, coverage, sonarcloud]
     if: always() && github.ref == 'refs/heads/main'
     
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
       
-      - name: Create publish directory
+      - name: 📁 Create publish directory
         run: mkdir -p publish
       
-      - name: Download Allure Report (Python 3.12)
+      - name: 📥 Download Allure Report (Python 3.12)
         uses: actions/download-artifact@v4
         with:
-          name: allure-report-3.12
+          name: allure-report-3.12-${{ github.run_number }}
           path: ./publish/allure-report
       
-      - name: Create root redirect page
+      - name: 🏠 Create root redirect page
         run: |
           cat > publish/index.html << 'EOF'
           <!DOCTYPE html>
@@ -213,31 +413,146 @@ jobs:
           </html>
           EOF
       
-      - name: Publish Allure Report to GitHub Pages
+      - name: 🌐 Publish Allure Report to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./publish
           publish_branch: gh-pages
       
-      - name: Report URL in Summary
+      - name: 📋 Report URL in Summary
         run: |
-          echo "## 📊 Allure Report Published!" >> $GITHUB_STEP_SUMMARY
+          echo "## 📊 Reports Published!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🔗 **View Report:** https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-report" >> $GITHUB_STEP_SUMMARY
+          echo "| Report | Link |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 📈 **Allure Report** | [View Report](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-report) |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔬 **SonarCloud** | [View Analysis](https://sonarcloud.io/project/overview?id=foyezkabir_playwright-api-automation-python) |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Report will be available in ~2 minutes after deployment completes." >> $GITHUB_STEP_SUMMARY
+          echo "Reports will be available in ~2 minutes after deployment completes." >> $GITHUB_STEP_SUMMARY
 
-  # Security scan job
+  # ═══════════════════════════════════════════════════════════════════════════
+  # STAGE 7: NOTIFICATIONS
+  # ═══════════════════════════════════════════════════════════════════════════
+  
+  notify:
+    name: 📢 Notify
+    runs-on: ubuntu-latest
+    needs: [test, deploy]
+    if: always()
+    
+    steps:
+      - name: 📊 Prepare Notification Summary
+        id: summary
+        run: |
+          if [ "${{ needs.test.result }}" == "success" ]; then
+            echo "status=✅ Success" >> $GITHUB_OUTPUT
+            echo "color=good" >> $GITHUB_OUTPUT
+          elif [ "${{ needs.test.result }}" == "failure" ]; then
+            echo "status=❌ Failed" >> $GITHUB_OUTPUT
+            echo "color=danger" >> $GITHUB_OUTPUT
+          else
+            echo "status=⚠️ ${{ needs.test.result }}" >> $GITHUB_OUTPUT
+            echo "color=warning" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: 📋 Create GitHub Summary
+        run: |
+          echo "## 📢 Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Stage | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 🎨 Code Quality | ${{ needs.code-quality.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📊 Type Check | ${{ needs.type-check.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔨 Build | ${{ needs.build.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 💨 Smoke Tests | ${{ needs.smoke-tests.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🧪 Tests | ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| � SonarCloud | ${{ needs.sonarcloud.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📈 Coverage | ${{ needs.coverage.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🚀 Deploy | ${{ needs.deploy.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔒 Security | ${{ needs.security-scan.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Overall Status:** ${{ steps.summary.outputs.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Reports" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔗 **Allure Report:** https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-report" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔗 **SonarCloud:** https://sonarcloud.io/project/overview?id=foyezkabir_playwright-api-automation-python" >> $GITHUB_STEP_SUMMARY
+      
+      - name: 📨 Send Slack Notification
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "${{ needs.test.result == 'success' && '✅' || '❌' }} API Tests - ${{ needs.test.result }}",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Repository:*\n${{ github.repository }}"},
+                    {"type": "mrkdwn", "text": "*Branch:*\n${{ github.ref_name }}"},
+                    {"type": "mrkdwn", "text": "*Commit:*\n${{ github.event.head_commit.message }}"},
+                    {"type": "mrkdwn", "text": "*Author:*\n${{ github.actor }}"}
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*📊 Reports:*\n• <https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-report|📈 Allure Report>\n• <https://sonarcloud.io/project/overview?id=foyezkabir_playwright-api-automation-python|🔬 SonarCloud>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # STAGE 9: CLEANUP
+  # ═══════════════════════════════════════════════════════════════════════════
+  
+  cleanup:
+    name: 🧹 Cleanup
+    runs-on: ubuntu-latest
+    needs: [notify]
+    if: always()
+    
+    steps:
+      - name: 🗑️ Delete old workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          retain_days: 30
+          keep_minimum_runs: 10
+      
+      - name: 📋 Cleanup Summary
+        run: |
+          echo "## 🧹 Cleanup Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Old workflow runs older than 30 days deleted" >> $GITHUB_STEP_SUMMARY
+          echo "- Minimum 10 recent runs retained" >> $GITHUB_STEP_SUMMARY
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # PARALLEL: SECURITY SCAN
+  # ═══════════════════════════════════════════════════════════════════════════
   security-scan:
-    name: Security Dependency Scan
+    name: 🔒 Security Dependency Scan
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
       
-      - name: Run Safety check
+      - name: 🔍 Run Safety check
         run: |
           pip install safety
           safety check --json || true

@@ -25,6 +25,9 @@ pytest-reportportal>=5.3.0       # AI-powered ReportPortal integration
 # Code Quality & Coverage (Optional)
 pytest-cov>=4.1.0                # Code coverage
 safety>=2.3.0                    # Security vulnerability scanning
+ruff>=0.1.0                      # Fast Python linter & formatter
+mypy>=1.7.0                      # Static type checking
+types-requests>=2.31.0           # Type stubs for requests
 
 # Utilities
 requests>=2.31.0                 # HTTP library for additional API calls
