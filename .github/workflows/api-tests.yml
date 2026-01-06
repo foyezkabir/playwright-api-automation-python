@@ -103,7 +103,7 @@ jobs:
           MYPY_OUTPUT=$(mypy . --ignore-missing-imports 2>&1) || true
           ERROR_COUNT=$(echo "$MYPY_OUTPUT" | grep -c "error:" || echo "0")
           
-          if [ "$ERROR_COUNT" -eq "0" ] || [ -z "$ERROR_COUNT" ]; then
+          if [ "$ERROR_COUNT" = "0" ] || [ "$ERROR_COUNT" -eq "0" ] 2>/dev/null; then
             echo "### 🎉 Congratulations! No type errors found" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "✅ All type annotations are correct and consistent" >> $GITHUB_STEP_SUMMARY
