@@ -54,7 +54,7 @@ class UserDataFactory:
         return fake.last_name()
 
     @staticmethod
-    def random_email(domain: Optional[str] = None) -> str:
+    def random_email(domain: str | None = None) -> str:
         """
         Generates a random email address.
 
@@ -143,7 +143,7 @@ class UserDataFactory:
 
     @staticmethod
     def create_signup_payload(
-        name: Optional[str] = None, email: Optional[str] = None, password: Optional[str] = None, **kwargs
+        name: str | None = None, email: str | None = None, password: str | None = None, **kwargs
     ) -> dict[str, Any]:
         """
         Creates a complete signup payload with optional custom values.

@@ -11,7 +11,7 @@ import allure
 import pytest
 
 
-def smoke_test(title: Optional[str] = None, description: Optional[str] = None):
+def smoke_test(title: str | None = None, description: str | None = None):
     """
     Decorator for smoke tests with automatic Allure annotations.
 
@@ -38,9 +38,7 @@ def smoke_test(title: Optional[str] = None, description: Optional[str] = None):
     return decorator
 
 
-def regression_test(
-    title: Optional[str] = None, description: Optional[str] = None, severity: str = "NORMAL"
-):
+def regression_test(title: str | None = None, description: str | None = None, severity: str = "NORMAL"):
     """
     Decorator for regression tests with automatic Allure annotations.
 
@@ -76,7 +74,7 @@ def regression_test(
     return decorator
 
 
-def api_test(method: str, endpoint: str, title: Optional[str] = None):
+def api_test(method: str, endpoint: str, title: str | None = None):
     """
     Decorator for API tests with method and endpoint information.
 
@@ -106,7 +104,7 @@ def api_test(method: str, endpoint: str, title: Optional[str] = None):
     return decorator
 
 
-def known_bug(bug_id: str, reason: Optional[str] = None):
+def known_bug(bug_id: str, reason: str | None = None):
     """
     Decorator for tests with known bugs (xfail).
 
@@ -235,7 +233,7 @@ def with_test_data(**test_data):
 
 
 # Convenience decorators combining common patterns
-def critical_smoke(title: str, description: Optional[str] = None):
+def critical_smoke(title: str, description: str | None = None):
     """Critical smoke test (combines smoke_test with CRITICAL severity)."""
     return smoke_test(title=title, description=description)
 

@@ -117,7 +117,6 @@ def pytest_sessionfinish(session, exitstatus):
             if terminalreporter:
                 xfailed = len(terminalreporter.stats.get("xfailed", []))
                 passed = len(terminalreporter.stats.get("passed", []))
-                len(terminalreporter.stats.get("failed", []))
 
         # Calculate execution time
         duration = getattr(session, "duration", 0)
@@ -127,52 +126,23 @@ def pytest_sessionfinish(session, exitstatus):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         exec_time = f"{duration:.2f}" if duration > 0 else "N/A"
 
-        # Generate new results section
-        results_section = f"""## 📈 Test Execution Results
+        # Build stats dict and use shared functions to avoid code duplication
+        from sync_readme_test_results import generate_results_section, update_readme
 
-### Latest Test Run ({timestamp})
-```
-========================== test session starts ==========================
-collected {total} items
+        stats = {
+            "total": total,
+            "passed": passed,
+            "failed": 0,
+            "xfailed": xfailed,
+            "skipped": 0,
+            "execution_time": exec_time,
+            "signup_tests": 19,
+            "verification_tests": 10,
+            "timestamp": timestamp,
+        }
 
-test_signup.py                                     19 tests
-  ✅ {passed} passed
-  ⚠️ {xfailed} xfailed (security issues documented)
-
-test_signup_verification.py                        10 tests
-  ✅ 10 passed
-
-==================== {passed} passed, {xfailed} xfailed in {exec_time}s ====================
-```
-
-### Performance Metrics
-- **Total Tests**: {total}
-- **Execution Time**: ~{exec_time} seconds
-- **Parallel Workers**: 12
-- **Retry Attempts**: Up to 3 per test
-- **CI/CD Pipeline**: ~15-20 seconds total
-- **Last Updated**: {timestamp}"""
-
-        # Update README
-        readme_path = "README.md"
-        section_header = "## 📈 Test Execution Results"
-
-        with open(readme_path, encoding="utf-8") as f:
-            content = f.read()
-
-        # Find section start and replace
-        start_idx = content.find(section_header)
-        if start_idx == -1:
-            updated_content = content + "\n\n" + results_section
-        else:
-            next_section_idx = content.find("\n## ", start_idx + len(section_header))
-            if next_section_idx == -1:
-                updated_content = content[:start_idx] + results_section
-            else:
-                updated_content = content[:start_idx] + results_section + content[next_section_idx:]
-
-        with open(readme_path, "w", encoding="utf-8") as f:
-            f.write(updated_content)
+        results_section = generate_results_section(stats)
+        update_readme(results_section)
 
         logger.info(f"✅ README updated! {passed} passed, {xfailed} xfailed")
 

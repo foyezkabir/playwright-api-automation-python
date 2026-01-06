@@ -3,7 +3,7 @@ API Response Schema Validation using Pydantic models.
 Validates API responses against expected schemas.
 """
 
-from typing import Any, Type
+from typing import Any
 
 from pydantic import BaseModel, EmailStr, Field, validator
 
@@ -111,7 +111,7 @@ class UserProfileSchema(BaseModel):
 # ========== Validation Helper Functions ==========
 
 
-def validate_response_schema(response_data: dict, schema: Type[BaseModel]) -> tuple[bool, str | None]:
+def validate_response_schema(response_data: dict, schema: type[BaseModel]) -> tuple[bool, str | None]:
     """
     Validates response data against a Pydantic schema.
 
@@ -130,7 +130,7 @@ def validate_response_schema(response_data: dict, schema: Type[BaseModel]) -> tu
 
 
 def assert_response_schema(
-    response_data: dict, schema: Type[BaseModel], error_message: str = "Schema validation failed"
+    response_data: dict, schema: type[BaseModel], error_message: str = "Schema validation failed"
 ):
     """
     Asserts that response data matches the expected schema.
