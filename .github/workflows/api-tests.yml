@@ -56,7 +56,25 @@ jobs:
       
       - name: 🎯 Run Ruff Formatter Check
         run: |
-          ruff format --check . || echo "⚠️ Some files need formatting" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🎯 Formatting Check" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Run ruff format check and capture output
+          FORMAT_OUTPUT=$(ruff format --check . 2>&1) || true
+          
+          # Check if any files need formatting
+          if echo "$FORMAT_OUTPUT" | grep -q "Would reformat"; then
+            echo "⚠️ **Some files need formatting:**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "$FORMAT_OUTPUT" | grep "Would reformat" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "💡 Run \`ruff format .\` to fix formatting issues." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ All files are properly formatted!" >> $GITHUB_STEP_SUMMARY
+          fi
 
   type-check:
     name: 📊 Type Check
@@ -80,7 +98,22 @@ jobs:
         run: |
           echo "## 📊 Type Check Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          mypy . --ignore-missing-imports --no-error-summary 2>&1 | head -50 >> $GITHUB_STEP_SUMMARY || true
+          
+          # Run mypy and capture output
+          MYPY_OUTPUT=$(mypy . --ignore-missing-imports 2>&1) || true
+          ERROR_COUNT=$(echo "$MYPY_OUTPUT" | grep -c "error:" || echo "0")
+          
+          if [ "$ERROR_COUNT" -eq "0" ] || [ -z "$ERROR_COUNT" ]; then
+            echo "### 🎉 Congratulations! There are no type errors!" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "✅ All type annotations are correct and consistent." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ❌ Found $ERROR_COUNT type error(s)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "$MYPY_OUTPUT" | grep "error:" | head -20 >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
         continue-on-error: true
 
   # ═══════════════════════════════════════════════════════════════════════════
@@ -404,8 +437,46 @@ jobs:
         run: |
           echo "## 📈 Test Coverage Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          
           if [ -f coverage/coverage.xml ]; then
-            echo "Coverage report generated successfully!" >> $GITHUB_STEP_SUMMARY
+            # Extract coverage percentage from XML
+            COVERAGE=$(grep -oP 'line-rate="\K[0-9.]+' coverage/coverage.xml | head -1)
+            COVERAGE_PCT=$(echo "$COVERAGE * 100" | bc | cut -d'.' -f1)
+            
+            # Determine badge color
+            if [ "$COVERAGE_PCT" -ge 80 ]; then
+              BADGE="🟢"
+              STATUS="Excellent"
+            elif [ "$COVERAGE_PCT" -ge 60 ]; then
+              BADGE="🟡"
+              STATUS="Good"
+            elif [ "$COVERAGE_PCT" -ge 40 ]; then
+              BADGE="🟠"
+              STATUS="Fair"
+            else
+              BADGE="🔴"
+              STATUS="Needs Improvement"
+            fi
+            
+            echo "### $BADGE Overall Coverage: ${COVERAGE_PCT}% ($STATUS)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Extract file-level coverage if available
+            echo "| File | Coverage |" >> $GITHUB_STEP_SUMMARY
+            echo "|------|----------|" >> $GITHUB_STEP_SUMMARY
+            
+            # Parse coverage.xml for file-level details
+            grep -oP 'filename="\K[^"]+|line-rate="\K[0-9.]+' coverage/coverage.xml | \
+            paste - - | while read file rate; do
+              pct=$(echo "$rate * 100" | bc | cut -d'.' -f1)
+              if [ "$pct" -ge 80 ]; then icon="✅"; 
+              elif [ "$pct" -ge 50 ]; then icon="⚠️"; 
+              else icon="❌"; fi
+              echo "| $icon $file | ${pct}% |" >> $GITHUB_STEP_SUMMARY
+            done 2>/dev/null || echo "| (Details unavailable) | - |" >> $GITHUB_STEP_SUMMARY
+            
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "📊 [View Full HTML Report](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/coverage-report)" >> $GITHUB_STEP_SUMMARY
           else
             echo "⚠️ Coverage report not found" >> $GITHUB_STEP_SUMMARY
           fi
