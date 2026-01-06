@@ -362,15 +362,12 @@ jobs:
         continue-on-error: true
       
       - name: 🔬 SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v4
+        uses: SonarSource/sonarqube-scan-action@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: https://sonarcloud.io
         with:
-          projectBaseDir: .
           args: >
-            -Dsonar.projectPropertiesPath=sonarqube/sonar-project.properties
             -Dsonar.python.coverage.reportPaths=coverage.xml
       
       - name: 📋 SonarCloud Summary
