@@ -1049,7 +1049,8 @@ For questions, suggestions, or discussions about this framework:
 Potential improvements and extensions:
 
 - [ ] Add GraphQL API testing
-- [ ] Implement performance testing with locust
+- [ ] Implement performance testing (Locust/K6)
+- [ ] Performance test CI/CD integration
 - [ ] Add database validation
 - [ ] Extend to microservices architecture
 - [ ] Add Docker containerization
