@@ -1,0 +1,3 @@
+2026-01-10 03:40:05,069 [INFO] Creating API context with base URL: https://eks-dev-lb.shadhinlab.xyz
+2026-01-10 03:40:05,097 [INFO] Starting test: test_signup_name_validation_failures[Ab-Name too short]
+2026-01-10 03:40:06,575 [INFO] Finished test: test_signup_name_validation_failures[Ab-Name too short]
