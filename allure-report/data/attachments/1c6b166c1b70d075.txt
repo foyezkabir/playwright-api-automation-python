@@ -1,0 +1,2 @@
+INFO     conftest:conftest.py:76 Starting test: test_signup_email_public_domain[outlook.com]
+INFO     conftest:conftest.py:80 Finished test: test_signup_email_public_domain[outlook.com]

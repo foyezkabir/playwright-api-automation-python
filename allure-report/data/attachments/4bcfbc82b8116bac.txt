@@ -1,0 +1,2 @@
+2026-01-28 03:52:08,831 [INFO] Starting test: test_signup_email_public_domain[outlook.com]
+2026-01-28 03:52:09,009 [INFO] Finished test: test_signup_email_public_domain[outlook.com]
