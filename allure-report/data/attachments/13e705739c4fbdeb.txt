@@ -1,0 +1,2 @@
+2026-09-12 07:04:33,045 [INFO] Starting test: test_signup_email_public_domain[yahoo.com]
+2026-09-12 07:04:33,162 [INFO] Finished test: test_signup_email_public_domain[yahoo.com]

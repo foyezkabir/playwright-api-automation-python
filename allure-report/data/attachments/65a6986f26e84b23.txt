@@ -1,0 +1,2 @@
+2026-09-12 07:04:31,899 [INFO] Starting test: test_signup_name_validation_failures[ User-Leading space]
+2026-09-12 07:04:32,716 [INFO] Finished test: test_signup_name_validation_failures[ User-Leading space]
