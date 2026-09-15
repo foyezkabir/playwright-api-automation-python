@@ -1,0 +1,2 @@
+2026-09-15 07:33:00,897 [INFO] Starting test: test_signup_name_validation_failures[@User-Starts with special char]
+2026-09-15 07:33:01,827 [INFO] Finished test: test_signup_name_validation_failures[@User-Starts with special char]
