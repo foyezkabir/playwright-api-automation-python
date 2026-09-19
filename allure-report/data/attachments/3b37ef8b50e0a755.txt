@@ -1,0 +1,2 @@
+2026-09-19 07:14:59,338 [INFO] Starting test: test_signup_email_public_domain[gmail.com]
+2026-09-19 07:14:59,449 [INFO] Finished test: test_signup_email_public_domain[gmail.com]

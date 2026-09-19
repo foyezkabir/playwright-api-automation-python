@@ -1,0 +1,3 @@
+INFO     conftest:conftest.py:76 Starting test: test_resend_otp_rate_limit
+INFO     conftest:conftest.py:80 Finished test: test_resend_otp_rate_limit
+INFO     conftest:conftest.py:62 Disposing API context
