@@ -1,0 +1,2 @@
+2026-10-03 07:54:08,378 [INFO] Starting test: test_signup_password_complexity[Password123-Missing special char]
+2026-10-03 07:54:08,661 [INFO] Finished test: test_signup_password_complexity[Password123-Missing special char]
