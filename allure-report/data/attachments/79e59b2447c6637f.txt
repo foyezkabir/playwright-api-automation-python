@@ -1,0 +1,12 @@
+
+==================================================
+CURRENT CONFIGURATION
+==================================================
+Environment: dev
+Base URL: https://eks-dev-lb.shadhinlab.xyz
+API Timeout: 30s
+Retry Count: 2
+Parallel Workers: 4
+Allure Results Dir: ./allure-results
+==================================================
+
