@@ -1,0 +1,2 @@
+2026-10-17 06:49:27,259 [INFO] Starting test: test_signup_password_complexity[PASSWORD123!-Missing lowercase]
+2026-10-17 06:49:27,564 [INFO] Finished test: test_signup_password_complexity[PASSWORD123!-Missing lowercase]
