@@ -1,0 +1,2 @@
+2026-10-24 07:07:56,044 [INFO] Starting test: test_signup_email_public_domain[hotmail.com]
+2026-10-24 07:07:56,274 [INFO] Finished test: test_signup_email_public_domain[hotmail.com]

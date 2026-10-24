@@ -1,0 +1,5 @@
+2026-10-24 07:07:12,630 [INFO] Creating API context with base URL: https://eks-dev-lb.shadhinlab.xyz
+2026-10-24 07:07:12,642 [INFO] Starting test: test_signup_success
+2026-10-24 07:07:24,003 [INFO] Finished test: test_signup_success
+2026-10-24 07:07:25,013 [INFO] Starting test: test_signup_success
+2026-10-24 07:07:45,342 [INFO] Finished test: test_signup_success
