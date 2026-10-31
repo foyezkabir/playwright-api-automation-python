@@ -1,0 +1,2 @@
+2026-10-31 08:17:35,473 [INFO] Starting test: test_signup_duplicate_email
+2026-10-31 08:17:47,491 [INFO] Finished test: test_signup_duplicate_email
