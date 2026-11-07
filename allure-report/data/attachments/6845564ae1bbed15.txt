@@ -1,0 +1,2 @@
+2026-11-07 08:37:57,213 [INFO] Starting test: test_signup_invalid_email
+2026-11-07 08:38:07,849 [INFO] Finished test: test_signup_invalid_email

@@ -1,0 +1,3 @@
+INFO     conftest:conftest.py:52 Creating API context with base URL: https://eks-dev-lb.shadhinlab.xyz
+INFO     conftest:conftest.py:76 Starting test: test_signup_missing_fields
+INFO     conftest:conftest.py:80 Finished test: test_signup_missing_fields

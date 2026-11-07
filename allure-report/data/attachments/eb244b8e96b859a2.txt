@@ -1,0 +1,2 @@
+2026-11-07 08:38:07,855 [INFO] Starting test: test_signup_name_validation_failures[User -Trailing space]
+2026-11-07 08:38:28,956 [INFO] Finished test: test_signup_name_validation_failures[User -Trailing space]
