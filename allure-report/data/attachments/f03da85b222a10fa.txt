@@ -1,0 +1,2 @@
+INFO     conftest:conftest.py:76 Starting test: test_signup_name_validation_failures[@User-Starts with special char]
+INFO     conftest:conftest.py:80 Finished test: test_signup_name_validation_failures[@User-Starts with special char]
