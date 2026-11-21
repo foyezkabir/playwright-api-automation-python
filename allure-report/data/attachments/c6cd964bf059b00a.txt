@@ -1,0 +1,2 @@
+2026-11-21 09:31:24,202 [INFO] Starting test: test_signup_password_complexity[Password!-Missing number]
+2026-11-21 09:31:34,755 [INFO] Finished test: test_signup_password_complexity[Password!-Missing number]
