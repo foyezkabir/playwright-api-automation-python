@@ -1,0 +1,2 @@
+INFO     conftest:conftest.py:76 Starting test: test_resend_otp_success
+INFO     conftest:conftest.py:80 Finished test: test_resend_otp_success
